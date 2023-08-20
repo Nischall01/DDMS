@@ -24,7 +24,7 @@ struct datetime
     int sec;
 } dt;
 
-// Function Declarations
+// Functions
 void clrs()
 {
     printf("\x1B[2J\x1B[H");
@@ -35,6 +35,27 @@ void press()
     getch();
     clrs();
 }
+void menu()
+{
+    printf("1. Add a new record\n");
+    printf("2. Open a record\n");
+    printf("3. Edit a record\n");
+    printf("4. Delete a record\n");
+    printf("5. Edit username, password, email address\n");
+    printf("6. Exit\n");
+    printf("=>");
+}
+void submenu()
+{
+
+    printf("1. Edit Username\n");
+    printf("2. Edit Password\n");
+    printf("3. Edit Email Address\n");
+    printf("4. Exit\n");
+    printf("=>");
+}
+
+// Function Declarations
 void UI();
 void dtime(int *, int *, int *, int *, int *, int *);
 void sign_up();
@@ -137,7 +158,7 @@ void UI()
     {
         clrs();
         records();
-        printf("1. Add a new record\n2. Open a record\n3. Edit a record\n4. Delete a record\n5. Edit username, password, email address\n6. Exit\n7. Check\n==> ");
+        menu();
         isnotint = scanf("%d", &choice);
         if (isnotint == 0)
         {
@@ -205,7 +226,7 @@ void UI()
             {
                 clrs();
                 int choice2;
-                printf("\n\t1. Edit username\n\t2. Edit password\n\t3. Edit email address\n\t4. Back\n\t==> "); // Edit function.
+                submenu();
                 isnotint = scanf("%d", &choice2);
                 if (isnotint == 0)
                 {
