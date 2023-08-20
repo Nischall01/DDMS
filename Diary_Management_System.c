@@ -43,7 +43,6 @@ void menu()
     printf("4. Delete a record\n");
     printf("5. Edit username, password, email address\n");
     printf("6. Exit\n");
-    printf("=>");
 }
 void submenu()
 {
@@ -52,15 +51,35 @@ void submenu()
     printf("2. Edit Password\n");
     printf("3. Edit Email Address\n");
     printf("4. Exit\n");
-    printf("=>");
 }
+void clearInputBuffer()
+{
+    while (getchar() != '\n')
+        ;
+}
+int getMenuChoice()
+{
+    int choice;
+    int isnotint;
+    printf("==> ");
+    isnotint = scanf("%d", &choice);
 
+    if (isnotint == 0)
+    {
+        clearInputBuffer();
+    }
+    else
+    {
+        clearInputBuffer();
+        return choice;
+    }
+}
 // Function Declarations
 void UI();
 void dtime(int *, int *, int *, int *, int *, int *);
 void sign_up();
 void addrecord();
-void viewrecord();
+void openrecord();
 void editrecord();
 void deleterecord();
 void editusername();
@@ -159,18 +178,7 @@ void UI()
         clrs();
         records();
         menu();
-        isnotint = scanf("%d", &choice);
-        if (isnotint == 0)
-        {
-            printf("\tInvalid input. Please enter a valid option.");
-            getch();
-            clrs();
-            while (getchar() != '\n')
-                ;
-            clrs();
-            continue;
-        }
-
+        choice = getMenuChoice();
         switch (choice)
         {
         case 1:
@@ -185,11 +193,10 @@ void UI()
             {
                 printf("Press any key to continue!\n");
                 getch();
-                break;
             }
             else
             {
-                viewrecord();
+                openrecord();
             }
             break;
         case 3:
@@ -199,7 +206,6 @@ void UI()
             {
                 printf("Press any key to continue!\n");
                 getch();
-                break;
             }
             else
             {
@@ -213,7 +219,6 @@ void UI()
             {
                 printf("Press any key to continue!\n");
                 getch();
-                break;
             }
             else
             {
@@ -227,35 +232,27 @@ void UI()
                 clrs();
                 int choice2;
                 submenu();
-                isnotint = scanf("%d", &choice2);
-                if (isnotint == 0)
-                {
-                    printf("\t\tInvalid input. Please enter a valid option.");
-                    getch();
-                    clrs();
-                    while (getchar() != '\n')
-                        ;
-                    continue;
-                }
+                choice2 = getMenuChoice();
                 switch (choice2)
                 {
                 case 1:
                     editusername();
-                    break;
+                    continue;
                 case 2:
                     editpassword();
-                    break;
+                    continue;
                 case 3:
                     editemailaddress();
-                    break;
+                    continue;
                 case 4:
                     clrs();
                     break;
                 default:
-                    printf("\t\tPlease enter a valid option.");
+                    clrs();
+                    printf("\tInvalid input. Please enter a valid option.");
                     getch();
                     clrs();
-                    break;
+                    continue;
                 }
                 break;
             }
@@ -264,7 +261,7 @@ void UI()
             exit(0);
         default:
             clrs();
-            printf("\tPlease enter a valid option.");
+            printf("\tInvalid input. Please enter a valid option.");
             getch();
             clrs();
             break;
@@ -528,7 +525,7 @@ void addrecord()
     fclose(file);
 }
 
-void viewrecord()
+void openrecord()
 {
     char record[50];
     printf("==> ");
