@@ -24,10 +24,15 @@ struct datetime
     int sec;
 } dt;
 
-// Function Declarations
+// Functions
 void clrs()
 {
     printf("\x1B[2J\x1B[H");
+}
+void clearInputBuffer()
+{
+    while (getchar() != '\n')
+        ;
 }
 void press()
 {
@@ -35,11 +40,68 @@ void press()
     getch();
     clrs();
 }
+void menu()
+{
+    printf("1. Add a new record\n");
+    printf("2. Open a record\n");
+    printf("3. Edit a record\n");
+    printf("4. Delete a record\n");
+    printf("5. Edit username, password, email address\n");
+    printf("6. Exit\n");
+}
+void submenu()
+{
+
+    printf("1. Edit Username\n");
+    printf("2. Edit Password\n");
+    printf("3. Edit Email Address\n");
+    printf("4. Exit\n");
+}
+int getMenuChoice()
+{
+    int choice;
+    int isnotint;
+    printf("==> ");
+    isnotint = scanf("%d", &choice);
+
+    if (isnotint == 0)
+    {
+        clearInputBuffer();
+    }
+    else
+    {
+        clearInputBuffer();
+        return choice;
+    }
+}
+int wanttocontinue()
+{
+    clrs();
+    char yn[1];
+    printf("Enter 'y' to continue and 'n' to exit.\n==> ");
+    scanf("%s", yn);
+    if (strcmp(yn, "y") == 0)
+    {
+        return 0;
+    }
+    else if (strcmp(yn, "n") == 0)
+    {
+        return 1;
+    }
+    else
+    {
+        clrs();
+        printf("\tInvalid input. Please enter a valid option.");
+        getch();
+        wanttocontinue();
+    }
+}
+// Function Declarations
 void UI();
 void dtime(int *, int *, int *, int *, int *, int *);
 void sign_up();
 void addrecord();
-void viewrecord();
+void openrecord();
 void editrecord();
 void deleterecord();
 void editusername();
@@ -137,19 +199,8 @@ void UI()
     {
         clrs();
         records();
-        printf("1. Add a new record\n2. Open a record\n3. Edit a record\n4. Delete a record\n5. Edit username, password, email address\n6. Exit\n7. Check\n==> ");
-        isnotint = scanf("%d", &choice);
-        if (isnotint == 0)
-        {
-            printf("\tInvalid input. Please enter a valid option.");
-            getch();
-            clrs();
-            while (getchar() != '\n')
-                ;
-            clrs();
-            continue;
-        }
-
+        menu();
+        choice = getMenuChoice();
         switch (choice)
         {
         case 1:
@@ -158,46 +209,77 @@ void UI()
             clrs();
             break;
         case 2:
-            clrs();
-            printf("\t|Open a record|\n");
-            if (records() == 0)
+            while (1)
             {
-                printf("Press any key to continue!\n");
-                getch();
-                break;
-            }
-            else
-            {
-                viewrecord();
+                clrs();
+                printf("\t|Open a record|\n");
+                if (records() == 0)
+                {
+                    press();
+                    break;
+                }
+                else
+                {
+                    openrecord();
+                    if (wanttocontinue() == 0)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
             }
             break;
         case 3:
-            clrs();
-            printf("\t|Edit a record|\n");
-            if (records() == 0)
+            while (1)
             {
-                printf("Press any key to continue!\n");
-                getch();
-                break;
-            }
-            else
-            {
-                editrecord();
+                clrs();
+                printf("\t|Edit a record|\n");
+                if (records() == 0)
+                {
+                    press();
+                    break;
+                }
+                else
+                {
+                    editrecord();
+                    if (wanttocontinue() == 0)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
             }
             break;
         case 4:
-            clrs();
-            printf("\t|Delete a record|\n");
-            if (records() == 0)
+            while (1)
             {
-                printf("Press any key to continue!\n");
-                getch();
-                break;
+                clrs();
+                printf("\t|Delete a record|\n");
+                if (records() == 0)
+                {
+                    press();
+                    break;
+                }
+                else
+                {
+                    deleterecord();
+                    if (wanttocontinue() == 0)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
             }
-            else
-            {
-                deleterecord();
-            }
+
             break;
         case 5:
             clrs();
@@ -205,36 +287,28 @@ void UI()
             {
                 clrs();
                 int choice2;
-                printf("\n\t1. Edit username\n\t2. Edit password\n\t3. Edit email address\n\t4. Back\n\t==> "); // Edit function.
-                isnotint = scanf("%d", &choice2);
-                if (isnotint == 0)
-                {
-                    printf("\t\tInvalid input. Please enter a valid option.");
-                    getch();
-                    clrs();
-                    while (getchar() != '\n')
-                        ;
-                    continue;
-                }
+                submenu();
+                choice2 = getMenuChoice();
                 switch (choice2)
                 {
                 case 1:
                     editusername();
-                    break;
+                    continue;
                 case 2:
                     editpassword();
-                    break;
+                    continue;
                 case 3:
                     editemailaddress();
-                    break;
+                    continue;
                 case 4:
                     clrs();
                     break;
                 default:
-                    printf("\t\tPlease enter a valid option.");
+                    clrs();
+                    printf("\tInvalid input. Please enter a valid option.");
                     getch();
                     clrs();
-                    break;
+                    continue;
                 }
                 break;
             }
@@ -243,7 +317,7 @@ void UI()
             exit(0);
         default:
             clrs();
-            printf("\tPlease enter a valid option.");
+            printf("\tInvalid input. Please enter a valid option.");
             getch();
             clrs();
             break;
@@ -493,8 +567,7 @@ void addrecord()
         // Write the additional record data to the file
         fprintf(file, "\n%s", record_data);
         fclose(file);
-        printf("\nNew record added successfully.\n");
-        printf("\nPress any key to continue !\n");
+        printf("\nNew record added successfully.");
         getch();
         clrs();
     }
@@ -507,7 +580,7 @@ void addrecord()
     fclose(file);
 }
 
-void viewrecord()
+void openrecord()
 {
     char record[50];
     printf("==> ");
@@ -524,11 +597,9 @@ void viewrecord()
     {
         printf("%s", line);
     }
+    printf("\n\n");
     fclose(file);
-    printf("\n");
-    printf("\nPress any key to continue !\n");
     getch();
-    clrs();
 }
 
 void editrecord()
@@ -547,7 +618,7 @@ void editrecord()
     else
     {
         system(record);
-        printf("The record is sucessfully edited.\n");
+        printf("\nThe record is sucessfully edited.");
         getch();
         clrs();
     }
@@ -559,7 +630,7 @@ void deleterecord()
     char recordToDelete[100];
     char record[100];
 
-    printf("==>");
+    printf("==> ");
     scanf("%s", recordToDelete); // Reading user input, limiting the word to 99 characters
     strcpy(record, recordToDelete);
     strcat(record, ".txt");
@@ -603,7 +674,7 @@ void deleterecord()
     {
         printf("Error renaming the temporary file.\n");
     }
-    printf("The record has been deleted successfully.\n");
+    printf("The record has been deleted successfully.");
     getch();
     clrs();
 }
