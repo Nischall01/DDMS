@@ -35,6 +35,7 @@ void press()
     getch();
     clrs();
     clrs();
+    clrs();
 }
 void UI();
 void dtime(int *, int *, int *, int *, int *, int *);
