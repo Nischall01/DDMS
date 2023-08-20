@@ -76,26 +76,31 @@ int getMenuChoice()
 }
 int wanttocontinue()
 {
-    clrs();
-    char yn[1];
-    printf("Enter 'y' to continue and 'n' to exit.\n==> ");
-    scanf("%s", yn);
-    if (strcmp(yn, "y") == 0)
-    {
-        return 0;
-    }
-    else if (strcmp(yn, "n") == 0)
-    {
-        return 1;
-    }
-    else
+    while (1)
     {
         clrs();
-        printf("\tInvalid input. Please enter a valid option.");
-        getch();
-        wanttocontinue();
+        char yn[2];
+        printf("Enter 'y' to continue and 'n' to exit.\n==> ");
+        scanf("%1s", yn);
+        clearInputBuffer();
+        if (strcmp(yn, "y") == 0)
+        {
+            return 0;
+        }
+        else if (strcmp(yn, "n") == 0)
+        {
+            return 1;
+        }
+        else
+        {
+            clrs();
+            printf("\tInvalid input. Please enter a valid option.");
+            getch();
+            continue;
+        }
     }
 }
+
 // Function Declarations
 void UI();
 void dtime(int *, int *, int *, int *, int *, int *);
