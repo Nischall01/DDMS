@@ -10,7 +10,9 @@
 #define FILENAME_SIZE 1024 // Defining value for FILENAME_SIZE
 #define MAX_LINE 2048      // Defining value for MAX_LINE
 #define CH_LIMIT 40        // Defining value for CH_LIMIT
-
+#define USERNAME_LINE 1;
+#define PASSWORD_LINE 2;
+#define EMAIL_LINE 3;
 // Structures
 struct datetime
 {
@@ -25,8 +27,15 @@ struct datetime
 // Function Declarations
 void clrs()
 {
-    printf("\033[2J\033[1;1H");
+    printf("\x1B[2J\x1B[H");
 }
+void press()
+{
+    printf("\nPress any key to continue !\n");
+    getch();
+    clrs();
+}
+void UI();
 void dtime(int *, int *, int *, int *, int *, int *);
 void sign_up();
 void addrecord();
@@ -40,14 +49,11 @@ int records();
 void check();
 
 // Universal Variables
-char tries = 5;
-int isnotint, isnotint1;
+int tries = 5;
+int isnotint;
 char buffer[MAX_LINE];
-int name_line = 1;    // as Line 1 in the txt file holds username
 char name[CH_LIMIT];  // This variable holds the name
-int pass_line = 2;    // as Line 2 in the txt file holds password
 char pass[CH_LIMIT];  // This variable holds the password
-int email_line = 3;   // as Line 3 in the txt file holds email address
 char email[CH_LIMIT]; // This variable holds the email address
 char line[MAX_LINE];
 
@@ -59,174 +65,193 @@ int main()
     int choice, choice2;
     char enteredpass[CH_LIMIT];
     char enteredeaddy[CH_LIMIT];
-    // File handling STARTs.
+    // Extract the username, password and email address.
     FILE *file;
     file = fopen("user_info.dat", "r");
-    if (file)
-    {
-        fscanf(file, "%s %s %s", name, pass, email);
-    }
-    else // if the file is not opened properly
-    {
-        printf("\nUser file does not exist. Please Signup.\n");
-        printf("\nPress any key to continue !\n");
-        getch();
-        sign_up();
-    }
+    fscanf(file, "%s %s %s", name, pass, email);
     fclose(file); // File handling STOPs.
 
-    //  Actual User Interface
+    //  Login Page
     printf("\t\tWelcome, %s\n", name);
     while (1)
     {
         printf("\n\tEnter the password ==> ");
         scanf("%s", enteredpass);
-        clrs();
-        // Comparing the value of entered password and password from the txt file
         if (strcmp(enteredpass, pass) == 0)
         {
-            while (1)
-            {
-                records();
-                printf("1. Add a new record\n2. Open a record \n3. Edit a record\n4. Delete a record\n5. Edit username, password, email address\n6. Exit\n7. Check\n==> ");
-                isnotint = scanf("%d", &choice);
-                if (isnotint == 0)
-                {
-                    printf("\tInvalid input. Please enter a valid option.");
-                    getch();
-                    clrs();
-                    while (getchar() != '\n')
-                        ;
-                    continue;
-                }
-                switch (choice)
-                {
-                case 1:
-                    addrecord();
-                    continue;
-                case 2:
-                    printf("\t|Open a record|\n");
-                    if (records() == 0)
-                    {
-                        printf("Press any key to continue !\n");
-                        getch();
-                        continue;
-                    }
-                    else
-                    {
-                        viewrecord();
-                        continue;
-                    }
-                    break;
-                case 3:
-                    printf("\t|Edit a record|\n");
-                    if (records() == 0)
-                    {
-                        printf("Press any key to continue !\n");
-                        getch();
-                        continue;
-                    }
-                    else
-                    {
-                        editrecord();
-                        continue;
-                    }
-                case 4:
-                    printf("\t|Delete a record|\n");
-                    if (records() == 0)
-                    {
-                        printf("Press any key to continue !\n");
-                        getch();
-                        continue;
-                    }
-                    else
-                    {
-                        deleterecord();
-                        continue;
-                    }
-                case 5:
-                    while (1)
-                    {
-                        clrs();
-                        printf("\n\t1. Edit username\n\t2. Edit password\n\t3. Edit email address\n\t4. Exit\n\t==> "); // Edit function.
-                        isnotint1 = scanf("%d", &choice2);
-                        if (isnotint1 == 0)
-                        {
-                            printf("\t\tInvalid input. Please enter a valid option.");
-                            getch();
-                            clrs();
-                            while (getchar() != '\n')
-                                ;
-                            continue;
-                        }
-                        switch (choice2)
-                        {
-                        case 1:
-                            editusername();
-                            continue;
-                        case 2:
-                            editpassword();
-                            continue;
-                        case 3:
-                            editemailaddress();
-                            continue;
-                        case 4:
-                            clrs();
-                            break;
-                        default:
-                            printf("\t\tPlease enter a valid option.");
-                            getch();
-                            clrs();
-                            continue;
-                        }
-                        break;
-                    }
-                    continue;
-                case 6:
-                    return 0;
-                default:
-                    printf("\tPlease enter a valid option.");
-                    getch();
-                    clrs();
-                    continue;
-                }
-            }
+            clrs();
+            UI();
         }
         else if (strcmp(enteredpass, "RESET") == 0)
         {
+            int trys = 5;
         try_email:
-            printf("\nEnter your email address entered during the login or enter 'EXIT' to exit:\n==>");
+            printf("\nEnter your email address entered during the login or enter 'EXIT' to exit:\n==> ");
             scanf("%s", enteredeaddy);
             if (strcmp(enteredeaddy, email) == 0)
             {
-                printf("New password is saved.\n"); // Need to add replace password function.
-                break;
+                clrs();
+                editpassword();
+                main();
             }
             else if (strcmp(enteredeaddy, "EXIT") == 0)
             {
-                break;
+                main();
             }
             else
             {
+                clrs();
+                trys--;
+                printf("\nIncorrect email address. Please try again. Tries left: %d", trys);
+                if (trys == 0) // if wrong password is entered more than '5' times the program will terminate.
+                {
+                    clrs();
+                    printf("\n\t********** Entered too many incorrect entries. **********");
+                    return 0;
+                }
+                goto try_email;
                 break;
             }
         }
         else
         {
             tries--;
+            clrs();
+            printf("\nIncorrect, please try again or if you forgot your password enter 'RESET'. Tries left: %d", tries);
             if (tries == 0) // if wrong password is entered more than '5' times the program will terminate.
             {
-                printf("\n\t**********Entered too many incorrect entries.**********");
+                clrs();
+                printf("\n\t********** Entered too many incorrect entries. **********");
                 return 0;
             }
-            printf("\nIncorrect, please try again or if you forgot your password enter 'RESET'. Tries left: %d", tries);
             continue;
         }
     }
     return 0;
 }
 
-// Fundtion Definitions
+void UI()
+{
+    int choice;
+    while (1)
+    {
+        clrs();
+        records();
+        printf("1. Add a new record\n2. Open a record\n3. Edit a record\n4. Delete a record\n5. Edit username, password, email address\n6. Exit\n7. Check\n==> ");
+        isnotint = scanf("%d", &choice);
+        if (isnotint == 0)
+        {
+            printf("\tInvalid input. Please enter a valid option.");
+            getch();
+            clrs();
+            while (getchar() != '\n')
+                ;
+            clrs();
+            continue;
+        }
+
+        switch (choice)
+        {
+        case 1:
+            clrs();
+            addrecord();
+            clrs();
+            break;
+        case 2:
+            clrs();
+            printf("\t|Open a record|\n");
+            if (records() == 0)
+            {
+                printf("Press any key to continue!\n");
+                getch();
+                break;
+            }
+            else
+            {
+                viewrecord();
+            }
+            break;
+        case 3:
+            clrs();
+            printf("\t|Edit a record|\n");
+            if (records() == 0)
+            {
+                printf("Press any key to continue!\n");
+                getch();
+                break;
+            }
+            else
+            {
+                editrecord();
+            }
+            break;
+        case 4:
+            clrs();
+            printf("\t|Delete a record|\n");
+            if (records() == 0)
+            {
+                printf("Press any key to continue!\n");
+                getch();
+                break;
+            }
+            else
+            {
+                deleterecord();
+            }
+            break;
+        case 5:
+            clrs();
+            while (1)
+            {
+                clrs();
+                int choice2;
+                printf("\n\t1. Edit username\n\t2. Edit password\n\t3. Edit email address\n\t4. Back\n\t==> "); // Edit function.
+                isnotint = scanf("%d", &choice2);
+                if (isnotint == 0)
+                {
+                    printf("\t\tInvalid input. Please enter a valid option.");
+                    getch();
+                    clrs();
+                    while (getchar() != '\n')
+                        ;
+                    continue;
+                }
+                switch (choice2)
+                {
+                case 1:
+                    editusername();
+                    break;
+                case 2:
+                    editpassword();
+                    break;
+                case 3:
+                    editemailaddress();
+                    break;
+                case 4:
+                    clrs();
+                    break;
+                default:
+                    printf("\t\tPlease enter a valid option.");
+                    getch();
+                    clrs();
+                    break;
+                }
+                break;
+            }
+            break;
+        case 6:
+            exit(0);
+        default:
+            clrs();
+            printf("\tPlease enter a valid option.");
+            getch();
+            clrs();
+            break;
+        }
+    }
+}
+
+// Function Definitions
 void check()
 {
     char buffer[MAX_LINE];
@@ -237,17 +262,16 @@ void check()
     // File handling STARTs.
     FILE *file;
     file = fopen("user_info.dat", "r"); // Opens the file the holds user info to read
-
-    fseek(file, 0, SEEK_END);     // Move the file pointer to the end of the file
-    long file_size = ftell(file); // Get the position of the file pointer (i.e., the file size)
-    if (file_size == 0)
+    fseek(file, 0, SEEK_END);           // Move the file pointer to the end of the file
+    long file_size = ftell(file);       // Get the position of the file pointer (i.e., the file size)
+    if (file_size == 0 || file == 0)    // Checks if the file exists or not & if it does, checks if it's empty or not.
     {
+        fclose(file);
         printf("Error in the user file. Please Signup\n");
         printf("\nPress any key to continue !\n");
         getch();
         sign_up();
     }
-
     if (file)
     {
         bool keep_reading = true;
@@ -263,6 +287,7 @@ void check()
                     size_t length = strlen(buffer);
                     if (length == 0)
                     {
+                        fclose(file);
                         printf("The name field is empty.\n");
                         sign_up();
                     }
@@ -272,6 +297,7 @@ void check()
                     size_t length = strlen(buffer);
                     if (length == 0)
                     {
+                        fclose(file);
                         printf("The password feild is empty.\n");
                         sign_up();
                     }
@@ -282,6 +308,7 @@ void check()
                     size_t length = strlen(buffer);
                     if (length == 0)
                     {
+                        fclose(file);
                         printf("The email feild is empty.\n");
                         sign_up();
                     }
@@ -296,14 +323,16 @@ void check()
 int records()
 {
     FILE *file;
-    file = fopen("Records.dat", "r+");
-    printf("\nRecords:\n");
+    file = fopen("Records.dat", "r");
     if (file == NULL)
     {
-        rewind(file);
+        fclose(file);
+        clrs();
         file = fopen("Records.dat", "w");
         fclose(file);
+        records();
     }
+    printf("\nRecords:\n");
     fseek(file, 0, SEEK_END);     // Move the file pointer to the end of the file
     long file_size = ftell(file); // Get the position of the file pointer (i.e., the file size)
     fclose(file);
@@ -463,15 +492,17 @@ void addrecord()
 
         // Write the additional record data to the file
         fprintf(file, "\n%s", record_data);
-
-        printf("\nNew record added successfully.\n");
-
-        // Close the file after writing data
         fclose(file);
+        printf("\nNew record added successfully.\n");
+        printf("\nPress any key to continue !\n");
+        getch();
+        clrs();
     }
     else
     {
         printf("Error: Unable to create the record file.\n");
+        getch();
+        clrs();
     }
     fclose(file);
 }
@@ -497,6 +528,7 @@ void viewrecord()
     printf("\n");
     printf("\nPress any key to continue !\n");
     getch();
+    clrs();
 }
 
 void editrecord()
@@ -516,6 +548,8 @@ void editrecord()
     {
         system(record);
         printf("The record is sucessfully edited.\n");
+        getch();
+        clrs();
     }
     fclose(file);
 }
@@ -570,6 +604,8 @@ void deleterecord()
         printf("Error renaming the temporary file.\n");
     }
     printf("The record has been deleted successfully.\n");
+    getch();
+    clrs();
 }
 
 void editusername() // Edit username function
@@ -618,7 +654,9 @@ void editusername() // Edit username function
         perror("Error renaming the file!");
         printf("\nError no.%d\n", errno);
     }
-    printf("Username replaced successfully.\n");
+    clrs();
+    printf("\tUsername replaced successfully.\n");
+    getch();
 }
 
 void editpassword() // Edit password function
@@ -668,7 +706,10 @@ void editpassword() // Edit password function
         perror("Error renaming the file!");
         printf("\nError no.%d\n", errno);
     }
-    printf("Password replaced successfully.\n");
+    clrs();
+    printf("\tPassword replaced successfully.\n");
+    printf("\nPress any key to continue !\n");
+    getch();
 }
 
 void editemailaddress() // Edit email address function
