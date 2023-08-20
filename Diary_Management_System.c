@@ -34,6 +34,7 @@ void press()
     printf("\nPress any key to continue !\n");
     getch();
     clrs();
+    clrs();
 }
 void UI();
 void dtime(int *, int *, int *, int *, int *, int *);
