@@ -27,6 +27,7 @@ struct datetime
 // Functions
 void clrs()
 {
+    system("cls");
     printf("\x1B[2J\x1B[H");
 }
 void clearInputBuffer()
@@ -540,6 +541,7 @@ void sign_up()
     fputs(buffer, file);
     fclose(file);
     printf("Sign up successful!\n");
+    press();
     system("Diary_Management_System.exe");
 }
 
@@ -555,7 +557,6 @@ void addrecord()
     fclose(file);
     strcat(record_name, ".txt");
     printf("\n%s\n", record_name);
-
     file = fopen(record_name, "w");
     if (file != NULL)
     {
