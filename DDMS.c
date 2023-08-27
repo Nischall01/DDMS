@@ -670,7 +670,7 @@ void deleterecord()
     clrs();
 }
 
-void editusername() // Edit username function
+void editusername() 
 {
     char replacement[50];
     printf("Enter the new username: ");
@@ -721,7 +721,7 @@ void editusername() // Edit username function
     getch();
 }
 
-void editpassword() // Edit password function
+void editpassword() 
 {
     char replacement[50];
     printf("Enter the replacement: ");
@@ -774,7 +774,7 @@ void editpassword() // Edit password function
     getch();
 }
 
-void editemailaddress() // Edit email address function
+void editemailaddress() 
 {
     char replacement[50];
     printf("Enter the replacement: ");
@@ -824,7 +824,7 @@ void editemailaddress() // Edit email address function
     printf("Email address replaced successfully.\n");
 }
 
-void dtime(int *y, int *m, int *d, int *h, int *mi, int *s) // DateTime function
+void dtime(int *y, int *m, int *d, int *h, int *mi, int *s) 
 {
     SYSTEMTIME t;
     GetLocalTime(&t);
