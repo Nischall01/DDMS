@@ -24,85 +24,14 @@ struct datetime
     int sec;
 } dt;
 
-// Functions
-void clrs()
-{
-    system("cls");
-    printf("\x1B[2J\x1B[H");
-}
-void clearInputBuffer()
-{
-    while (getchar() != '\n')
-        ;
-}
-void press()
-{
-    printf("\nPress any key to continue !\n");
-    getch();
-    clrs();
-}
-void menu()
-{
-    printf("1. Add a new record\n");
-    printf("2. Open a record\n");
-    printf("3. Edit a record\n");
-    printf("4. Delete a record\n");
-    printf("5. Edit username, password, email address\n");
-    printf("6. Exit\n");
-}
-void submenu()
-{
-
-    printf("1. Edit Username\n");
-    printf("2. Edit Password\n");
-    printf("3. Edit Email Address\n");
-    printf("4. Exit\n");
-}
-int getMenuChoice()
-{
-    int choice;
-    int isnotint;
-    printf("==> ");
-    isnotint = scanf("%d", &choice);
-
-    if (isnotint == 0)
-    {
-        clearInputBuffer();
-    }
-    else
-    {
-        clearInputBuffer();
-        return choice;
-    }
-}
-int wanttocontinue()
-{
-    while (1)
-    {
-        clrs();
-        char yn[2];
-        printf("Enter 'y' to continue and 'n' to exit.\n==> ");
-        scanf("%1s", yn);
-        clearInputBuffer();
-        if (strcmp(yn, "y") == 0)
-        {
-            return 0;
-        }
-        else if (strcmp(yn, "n") == 0)
-        {
-            return 1;
-        }
-        else
-        {
-            clrs();
-            printf("\tInvalid input. Please enter a valid option.");
-            getch();
-            continue;
-        }
-    }
-}
-
 // Function Declarations
+void press();
+void menu();
+void submenu();
+int getMenuChoice();
+int wanttocontinue();
+void clearInputBuffer();
+void clrs();
 void UI();
 void dtime(int *, int *, int *, int *, int *, int *);
 void sign_up();
@@ -384,7 +313,82 @@ void checkuserfile()
     }
     fclose(file);
 }
+void clrs()
+{
+    system("cls");
+    printf("\x1B[2J\x1B[H");
+}
+void clearInputBuffer()
+{
+    while (getchar() != '\n')
+        ;
+}
+void press()
+{
+    printf("\nPress any key to continue !\n");
+    getch();
+    clrs();
+}
+void menu()
+{
+    printf("1. Add a new record\n");
+    printf("2. Open a record\n");
+    printf("3. Edit a record\n");
+    printf("4. Delete a record\n");
+    printf("5. Edit username, password, email address\n");
+    printf("6. Exit\n");
+}
+void submenu()
+{
 
+    printf("1. Edit Username\n");
+    printf("2. Edit Password\n");
+    printf("3. Edit Email Address\n");
+    printf("4. Exit\n");
+}
+int getMenuChoice()
+{
+    int choice;
+    int isnotint;
+    printf("==> ");
+    isnotint = scanf("%d", &choice);
+
+    if (isnotint == 0)
+    {
+        clearInputBuffer();
+    }
+    else
+    {
+        clearInputBuffer();
+        return choice;
+    }
+}
+int wanttocontinue()
+{
+    while (1)
+    {
+        clrs();
+        char yn[2];
+        printf("Enter 'y' to continue and 'n' to exit.\n==> ");
+        scanf("%1s", yn);
+        clearInputBuffer();
+        if (strcmp(yn, "y") == 0)
+        {
+            return 0;
+        }
+        else if (strcmp(yn, "n") == 0)
+        {
+            return 1;
+        }
+        else
+        {
+            clrs();
+            printf("\tInvalid input. Please enter a valid option.");
+            getch();
+            continue;
+        }
+    }
+}
 int records()
 {
     FILE *file;
