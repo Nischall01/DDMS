@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <windows.h>
+#include <unistd.h>
 #include <stdbool.h>
 #include <errno.h>
 #include <ctype.h>
@@ -26,11 +27,13 @@ struct datetime
 
 // Function Declarations
 void press();
+int main();
 void menu();
 void submenu();
 int getMenuChoice();
 int wanttocontinue();
 void clearInputBuffer();
+void notriesleft();
 void clrs();
 void UI();
 void dtime(int *, int *, int *, int *, int *, int *);
@@ -72,7 +75,7 @@ int main()
     printf("\t\tWelcome, %s\n", name);
     while (1)
     {
-        printf("\n\tEnter the password ==> ");
+        printf("\n\tEnter the password => ");
         scanf("%s", enteredpass);
         if (strcmp(enteredpass, pass) == 0)
         {
@@ -81,9 +84,10 @@ int main()
         }
         else if (strcmp(enteredpass, "RESET") == 0)
         {
+            clrs();
             int trys = 5;
         try_email:
-            printf("\nEnter your email address entered during the login or enter 'EXIT' to exit:\n==> ");
+            printf("\nEnter your email address entered during the login or enter 'EXIT' to exit:\n=> ");
             scanf("%s", enteredeaddy);
             if (strcmp(enteredeaddy, email) == 0)
             {
@@ -99,12 +103,10 @@ int main()
             {
                 clrs();
                 trys--;
-                printf("\nIncorrect email address. Please try again. Tries left: %d", trys);
+                printf("\nIncorrect email address. Please try again. Tries left: %d\n", trys);
                 if (trys == 0) // if wrong password is entered more than '5' times the program will terminate.
                 {
-                    clrs();
-                    printf("\n\t********** Entered too many incorrect entries. **********");
-                    return 0;
+                    notriesleft();
                 }
                 goto try_email;
                 break;
@@ -117,9 +119,7 @@ int main()
             printf("\nIncorrect, please try again or if you forgot your password enter 'RESET'. Tries left: %d", tries);
             if (tries == 0) // if wrong password is entered more than '5' times the program will terminate.
             {
-                clrs();
-                printf("\n\t********** Entered too many incorrect entries. **********");
-                return 0;
+                notriesleft();
             }
             continue;
         }
@@ -249,6 +249,9 @@ void UI()
             }
             break;
         case 6:
+            clrs();
+            printf("\tHave a great Day.");
+            sleep(1.9);
             exit(0);
         default:
             clrs();
@@ -350,7 +353,7 @@ int getMenuChoice()
 {
     int choice;
     int isnotint;
-    printf("==> ");
+    printf("=> ");
     isnotint = scanf("%d", &choice);
 
     if (isnotint == 0)
@@ -369,7 +372,7 @@ int wanttocontinue()
     {
         clrs();
         char yn[2];
-        printf("Enter 'y' to continue and 'n' to exit.\n==> ");
+        printf("Enter 'y' to continue and 'n' to exit.\n=> ");
         scanf("%1s", yn);
         clearInputBuffer();
         if (strcmp(yn, "y") == 0)
@@ -389,6 +392,14 @@ int wanttocontinue()
         }
     }
 }
+void notriesleft()
+{
+    clrs();
+    printf("\n\t********** No tries left. **********");
+    sleep(2);
+    exit(0);
+}
+
 int records()
 {
     FILE *file;
@@ -552,7 +563,7 @@ void addrecord()
 
         // Enter the record data
         char record_data[100];
-        printf("==> ");
+        printf("=> ");
         scanf(" %[^\n]", record_data); // Read input until newline is encountered
 
         // Write the additional record data to the file
@@ -574,7 +585,7 @@ void addrecord()
 void openrecord()
 {
     char record[50];
-    printf("==> ");
+    printf("=> ");
     scanf("%s", record);
     strcat(record, ".txt");
     FILE *file;
@@ -596,7 +607,7 @@ void openrecord()
 void editrecord()
 {
     char record[50];
-    printf("==> ");
+    printf("=> ");
     scanf("%s", record);
     strcat(record, ".txt");
     FILE *file;
@@ -621,7 +632,7 @@ void deleterecord()
     char recordToDelete[100];
     char record[100];
 
-    printf("==> ");
+    printf("=> ");
     scanf("%s", recordToDelete); // Reading user input, limiting the word to 99 characters
     strcpy(record, recordToDelete);
     strcat(record, ".txt");
@@ -665,15 +676,15 @@ void deleterecord()
     {
         printf("Error renaming the temporary file.\n");
     }
-    printf("The record has been deleted successfully.");
+    printf("\nThe record has been deleted successfully.");
     getch();
     clrs();
 }
 
-void editusername() 
+void editusername()
 {
     char replacement[50];
-    printf("Enter the new username: ");
+    printf("Enter new username: ");
     scanf("%s", replacement);
 
     FILE *original;
@@ -721,10 +732,10 @@ void editusername()
     getch();
 }
 
-void editpassword() 
+void editpassword()
 {
     char replacement[50];
-    printf("Enter the replacement: ");
+    printf("Enter new password: ");
     scanf("%s", replacement);
 
     FILE *original;
@@ -770,14 +781,13 @@ void editpassword()
     }
     clrs();
     printf("\tPassword replaced successfully.\n");
-    printf("\nPress any key to continue !\n");
     getch();
 }
 
-void editemailaddress() 
+void editemailaddress()
 {
     char replacement[50];
-    printf("Enter the replacement: ");
+    printf("Enter new email address: ");
     scanf("%s", replacement);
 
     FILE *original;
@@ -821,10 +831,12 @@ void editemailaddress()
         perror("Error renaming the file!");
         printf("\nError no.%d\n", errno);
     }
+    clrs();
     printf("Email address replaced successfully.\n");
+    getch();
 }
 
-void dtime(int *y, int *m, int *d, int *h, int *mi, int *s) 
+void dtime(int *y, int *m, int *d, int *h, int *mi, int *s)
 {
     SYSTEMTIME t;
     GetLocalTime(&t);
