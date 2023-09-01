@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <windows.h>
+#include <unistd.h>
 #include <stdbool.h>
 #include <errno.h>
 #include <ctype.h>
@@ -10,9 +11,9 @@
 #define FILENAME_SIZE 1024 // Defining value for FILENAME_SIZE
 #define MAX_LINE 2048      // Defining value for MAX_LINE
 #define CH_LIMIT 40        // Defining value for CH_LIMIT
-#define USERNAME_LINE 1;
-#define PASSWORD_LINE 2;
-#define EMAIL_LINE 3;
+#define USERNAME_LINE 1
+#define PASSWORD_LINE 2
+#define EMAIL_LINE 3
 // Structures
 struct datetime
 {
@@ -24,79 +25,16 @@ struct datetime
     int sec;
 } dt;
 
-// Functions
-void clrs()
-{
-    printf("\x1B[2J\x1B[H");
-}
-void clearInputBuffer()
-{
-    while (getchar() != '\n')
-        ;
-}
-void press()
-{
-    printf("\nPress any key to continue !\n");
-    getch();
-    clrs();
-}
-void menu()
-{
-    printf("1. Add a new record\n");
-    printf("2. Open a record\n");
-    printf("3. Edit a record\n");
-    printf("4. Delete a record\n");
-    printf("5. Edit username, password, email address\n");
-    printf("6. Exit\n");
-}
-void submenu()
-{
-
-    printf("1. Edit Username\n");
-    printf("2. Edit Password\n");
-    printf("3. Edit Email Address\n");
-    printf("4. Exit\n");
-}
-int getMenuChoice()
-{
-    int choice;
-    int isnotint;
-    printf("==> ");
-    isnotint = scanf("%d", &choice);
-
-    if (isnotint == 0)
-    {
-        clearInputBuffer();
-    }
-    else
-    {
-        clearInputBuffer();
-        return choice;
-    }
-}
-int wanttocontinue()
-{
-    clrs();
-    char yn[1];
-    printf("Enter 'y' to continue and 'n' to exit.\n==> ");
-    scanf("%s", yn);
-    if (strcmp(yn, "y") == 0)
-    {
-        return 0;
-    }
-    else if (strcmp(yn, "n") == 0)
-    {
-        return 1;
-    }
-    else
-    {
-        clrs();
-        printf("\tInvalid input. Please enter a valid option.");
-        getch();
-        wanttocontinue();
-    }
-}
 // Function Declarations
+void press();
+int main();
+void menu();
+void submenu();
+int getMenuChoice();
+int wanttocontinue();
+void clearInputBuffer();
+void notriesleft();
+void clrs();
 void UI();
 void dtime(int *, int *, int *, int *, int *, int *);
 void sign_up();
@@ -108,7 +46,7 @@ void editusername();
 void editpassword();
 void editemailaddress();
 int records();
-void check();
+void checkuserfile();
 
 // Universal Variables
 int tries = 5;
@@ -123,7 +61,7 @@ char line[MAX_LINE];
 int main()
 {
     clrs();
-    check();
+    checkuserfile();
     int choice, choice2;
     char enteredpass[CH_LIMIT];
     char enteredeaddy[CH_LIMIT];
@@ -137,7 +75,7 @@ int main()
     printf("\t\tWelcome, %s\n", name);
     while (1)
     {
-        printf("\n\tEnter the password ==> ");
+        printf("\n\tEnter the password => ");
         scanf("%s", enteredpass);
         if (strcmp(enteredpass, pass) == 0)
         {
@@ -146,9 +84,10 @@ int main()
         }
         else if (strcmp(enteredpass, "RESET") == 0)
         {
+            clrs();
             int trys = 5;
         try_email:
-            printf("\nEnter your email address entered during the login or enter 'EXIT' to exit:\n==> ");
+            printf("\nEnter your email address entered during the login or enter 'EXIT' to exit:\n=> ");
             scanf("%s", enteredeaddy);
             if (strcmp(enteredeaddy, email) == 0)
             {
@@ -164,12 +103,10 @@ int main()
             {
                 clrs();
                 trys--;
-                printf("\nIncorrect email address. Please try again. Tries left: %d", trys);
+                printf("\nIncorrect email address. Please try again. Tries left: %d\n", trys);
                 if (trys == 0) // if wrong password is entered more than '5' times the program will terminate.
                 {
-                    clrs();
-                    printf("\n\t********** Entered too many incorrect entries. **********");
-                    return 0;
+                    notriesleft();
                 }
                 goto try_email;
                 break;
@@ -182,9 +119,7 @@ int main()
             printf("\nIncorrect, please try again or if you forgot your password enter 'RESET'. Tries left: %d", tries);
             if (tries == 0) // if wrong password is entered more than '5' times the program will terminate.
             {
-                clrs();
-                printf("\n\t********** Entered too many incorrect entries. **********");
-                return 0;
+                notriesleft();
             }
             continue;
         }
@@ -314,6 +249,9 @@ void UI()
             }
             break;
         case 6:
+            clrs();
+            printf("\tHave a great Day.");
+            sleep(1.9);
             exit(0);
         default:
             clrs();
@@ -326,72 +264,140 @@ void UI()
 }
 
 // Function Definitions
-void check()
+void checkuserfile()
 {
-    char buffer[MAX_LINE];
-
-    int name_line = 1;   // as Line 1 in the txt file holds username
-    char name[CH_LIMIT]; // This variable holds the name
-
-    // File handling STARTs.
     FILE *file;
-    file = fopen("user_info.dat", "r"); // Opens the file the holds user info to read
-    fseek(file, 0, SEEK_END);           // Move the file pointer to the end of the file
-    long file_size = ftell(file);       // Get the position of the file pointer (i.e., the file size)
-    if (file_size == 0 || file == 0)    // Checks if the file exists or not & if it does, checks if it's empty or not.
+    file = fopen("user_info.dat", "r+"); // Opens the file the holds user info to read
+    bool isEmptyLine = true;
+    int lineCount = 1;
+    char ch;
+    while ((ch = fgetc(file)) != EOF)
     {
-        fclose(file);
-        printf("Error in the user file. Please Signup\n");
-        printf("\nPress any key to continue !\n");
-        getch();
-        sign_up();
+        if (ch == '\n')
+        {
+            lineCount++;
+            if (isEmptyLine)
+            {
+                printf("Line %d is empty.\n", lineCount);
+            }
+            isEmptyLine = true;
+        }
+        else if (ch != ' ' && ch != '\t' && ch != '\n' && ch != '\r')
+        {
+            isEmptyLine = false;
+        }
     }
     if (file)
     {
-        bool keep_reading = true;
-        int current_line = 1;
-        do
+        fseek(file, 0, SEEK_END);        // Move the file pointer to the end of the file
+        long file_size = ftell(file);    // Get the position of the file pointer (i.e., the file size)
+        if (file_size == 0 || file == 0) // Checks if the file exists or not & if it does, checks if it's empty or not.
         {
-            fgets(buffer, MAX_LINE, file);
-            buffer[strcspn(buffer, "\n")] = 0;
-            if (current_line <= 3)
-            {
-                if (current_line == 1)
-                {
-                    size_t length = strlen(buffer);
-                    if (length == 0)
-                    {
-                        fclose(file);
-                        printf("The name field is empty.\n");
-                        sign_up();
-                    }
-                }
-                else if (current_line == 2)
-                {
-                    size_t length = strlen(buffer);
-                    if (length == 0)
-                    {
-                        fclose(file);
-                        printf("The password feild is empty.\n");
-                        sign_up();
-                    }
-                }
-                else if (current_line == 3)
-                {
-                    keep_reading = false;
-                    size_t length = strlen(buffer);
-                    if (length == 0)
-                    {
-                        fclose(file);
-                        printf("The email feild is empty.\n");
-                        sign_up();
-                    }
-                }
-            }
-            current_line++;
-        } while (keep_reading);
+            fclose(file);
+            printf("Error in the user file. Please Signup\n");
+            printf("\nPress any key to continue !\n");
+            getch();
+            sign_up();
+        }
+        else if (lineCount < 3)
+        {
+            fclose(file);
+            printf("Error in the user file. Please Signup\n");
+            printf("\nPress any key to continue !\n");
+            getch();
+            sign_up();
+        }
+    }
+    else
+    {
+        rewind(file);
+        file = fopen("user_info.dat", "w");
+        sign_up();
     }
     fclose(file);
+}
+void clrs()
+{
+    system("cls");
+    printf("\x1B[2J\x1B[H");
+}
+void clearInputBuffer()
+{
+    while (getchar() != '\n')
+        ;
+}
+void press()
+{
+    printf("\nPress any key to continue !\n");
+    getch();
+    clrs();
+}
+void menu()
+{
+    printf("1. Add a new record\n");
+    printf("2. Open a record\n");
+    printf("3. Edit a record\n");
+    printf("4. Delete a record\n");
+    printf("5. Edit username, password, email address\n");
+    printf("6. Exit\n");
+}
+void submenu()
+{
+
+    printf("1. Edit Username\n");
+    printf("2. Edit Password\n");
+    printf("3. Edit Email Address\n");
+    printf("4. Exit\n");
+}
+int getMenuChoice()
+{
+    int choice;
+    int isnotint;
+    printf("=> ");
+    isnotint = scanf("%d", &choice);
+
+    if (isnotint == 0)
+    {
+        clearInputBuffer();
+    }
+    else
+    {
+        clearInputBuffer();
+        return choice;
+    }
+}
+int wanttocontinue()
+{
+    while (1)
+    {
+        clrs();
+        char yn[2];
+        printf("Enter 'y' to continue and 'n' to exit.\n=> ");
+        scanf("%1s", yn);
+        clearInputBuffer();
+        if (strcmp(yn, "y") == 0)
+        {
+            return 0;
+        }
+        else if (strcmp(yn, "n") == 0)
+        {
+            return 1;
+        }
+        else
+        {
+            clrs();
+            printf("\tInvalid input. Please enter a valid option.");
+            getch();
+            continue;
+        }
+    }
+}
+void notriesleft()
+{
+    clrs();
+    printf("\n\t********** No tries left. **********");
+    sleep(2);
+    exit(0);
 }
 
 int records()
@@ -444,41 +450,8 @@ void sign_up()
     printf("\nPlease enter your username, password, and email address to SIGN UP. [NOTE] - No fields can be empty nor can it contain spaces.\n");
 
     // Input username
-    while (1)
-    {
-    loop:
-        printf("\nUsername: ");
-        if (fgets(buffer, MAX_LINE, stdin) == NULL)
-        {
-            printf("Error reading input.\n");
-            exit(1);
-        }
-        buffer[strcspn(buffer, "\n")] = 0;
-        if (strlen(buffer) == 0)
-        {
-            printf("!!Invalid Input!! This field cannot be empty.\n");
-            getch();
-            fclose(file);
-        }
-        else
-        {
-            for (int i = 0; buffer[i] != '\0'; i++)
-            {
-                if (buffer[i] == ' ')
-                {
-                    printf("!!Invalid Input!! Username cannot contain spaces.\n");
-                    getch();
-                    goto loop;
-                }
-            }
-            break;
-        }
-    }
-    strcat(buffer, "\n");
-    fputs(buffer, file);
 
-    // Input password
-    printf("Password: ");
+    printf("\nUsername: ");
     if (fgets(buffer, MAX_LINE, stdin) == NULL)
     {
         printf("Error reading input.\n");
@@ -498,7 +471,36 @@ void sign_up()
     }
     if (strlen(buffer) == 0)
     {
-        printf("!!Invalid Input!! This field cannot be empty.\n");
+        printf("!! This field cannot be empty.\n");
+        getch();
+        fclose(file);
+        sign_up();
+    }
+    strcat(buffer, "\n");
+    fputs(buffer, file);
+
+    // Input password
+    printf("Password: ");
+    if (fgets(buffer, MAX_LINE, stdin) == NULL)
+    {
+        printf("Error reading input.\n");
+        fclose(file);
+        return;
+    }
+    buffer[strcspn(buffer, "\n")] = 0;
+    for (int i = 0; buffer[i] != '\0'; i++)
+    {
+        if (buffer[i] == ' ')
+        {
+            printf("!!Invalid Input!! Password cannot contain spaces.\n");
+            getch();
+            fclose(file);
+            sign_up();
+        }
+    }
+    if (strlen(buffer) == 0)
+    {
+        printf("!! This field cannot be empty.\n");
         getch();
         fclose(file);
         sign_up();
@@ -519,7 +521,7 @@ void sign_up()
     {
         if (buffer[i] == ' ')
         {
-            printf("!!Invalid Input!! Username cannot contain spaces.\n");
+            printf("!!Invalid Input!! Email address cannot contain spaces.\n");
             getch();
             fclose(file);
             sign_up();
@@ -527,7 +529,7 @@ void sign_up()
     }
     if (strlen(buffer) == 0)
     {
-        printf("!!Invalid Input!! This field cannot be empty.\n");
+        printf("!! This field cannot be empty.\n");
         getch();
         fclose(file);
         sign_up();
@@ -535,7 +537,8 @@ void sign_up()
     fputs(buffer, file);
     fclose(file);
     printf("Sign up successful!\n");
-    system("Diary_Management_System.exe");
+    press();
+    // system("PDMS.exe");
 }
 
 void addrecord()
@@ -550,7 +553,6 @@ void addrecord()
     fclose(file);
     strcat(record_name, ".txt");
     printf("\n%s\n", record_name);
-
     file = fopen(record_name, "w");
     if (file != NULL)
     {
@@ -561,7 +563,7 @@ void addrecord()
 
         // Enter the record data
         char record_data[100];
-        printf("==> ");
+        printf("=> ");
         scanf(" %[^\n]", record_data); // Read input until newline is encountered
 
         // Write the additional record data to the file
@@ -583,7 +585,7 @@ void addrecord()
 void openrecord()
 {
     char record[50];
-    printf("==> ");
+    printf("=> ");
     scanf("%s", record);
     strcat(record, ".txt");
     FILE *file;
@@ -605,7 +607,7 @@ void openrecord()
 void editrecord()
 {
     char record[50];
-    printf("==> ");
+    printf("=> ");
     scanf("%s", record);
     strcat(record, ".txt");
     FILE *file;
@@ -630,7 +632,7 @@ void deleterecord()
     char recordToDelete[100];
     char record[100];
 
-    printf("==> ");
+    printf("=> ");
     scanf("%s", recordToDelete); // Reading user input, limiting the word to 99 characters
     strcpy(record, recordToDelete);
     strcat(record, ".txt");
@@ -674,15 +676,15 @@ void deleterecord()
     {
         printf("Error renaming the temporary file.\n");
     }
-    printf("The record has been deleted successfully.");
+    printf("\nThe record has been deleted successfully.");
     getch();
     clrs();
 }
 
-void editusername() // Edit username function
+void editusername()
 {
     char replacement[50];
-    printf("Enter the new username: ");
+    printf("Enter new username: ");
     scanf("%s", replacement);
 
     FILE *original;
@@ -730,10 +732,10 @@ void editusername() // Edit username function
     getch();
 }
 
-void editpassword() // Edit password function
+void editpassword()
 {
     char replacement[50];
-    printf("Enter the replacement: ");
+    printf("Enter new password: ");
     scanf("%s", replacement);
 
     FILE *original;
@@ -779,14 +781,13 @@ void editpassword() // Edit password function
     }
     clrs();
     printf("\tPassword replaced successfully.\n");
-    printf("\nPress any key to continue !\n");
     getch();
 }
 
-void editemailaddress() // Edit email address function
+void editemailaddress()
 {
     char replacement[50];
-    printf("Enter the replacement: ");
+    printf("Enter new email address: ");
     scanf("%s", replacement);
 
     FILE *original;
@@ -830,10 +831,12 @@ void editemailaddress() // Edit email address function
         perror("Error renaming the file!");
         printf("\nError no.%d\n", errno);
     }
+    clrs();
     printf("Email address replaced successfully.\n");
+    getch();
 }
 
-void dtime(int *y, int *m, int *d, int *h, int *mi, int *s) // DateTime function
+void dtime(int *y, int *m, int *d, int *h, int *mi, int *s)
 {
     SYSTEMTIME t;
     GetLocalTime(&t);
