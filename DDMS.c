@@ -29,7 +29,7 @@ struct datetime
 void press();
 int main();
 void menu();
-void submenu();
+void submenu_userdata();
 int getMenuChoice();
 int wanttocontinue();
 void clearInputBuffer();
@@ -38,15 +38,18 @@ void clrs();
 void UI();
 void dtime(int *, int *, int *, int *, int *, int *);
 void sign_up();
-void addrecord();
-void openrecord();
-void editrecord();
-void deleterecord();
+int addrecord();
+int openrecord();
+int editrecord();
+int deleterecord();
 void editusername();
 void editpassword();
 void editemailaddress();
 int records();
+int reminders();
+void submenu_reminders();
 void checkuserfile();
+bool exit_module(const char *);
 
 // Universal Variables
 int tries = 5;
@@ -129,20 +132,25 @@ int main()
 
 void UI()
 {
+    char fname[256]; // Declare a character array to store the filename
     int choice;
     while (1)
     {
         clrs();
-        records();
+        reminders();
         menu();
         choice = getMenuChoice();
         switch (choice)
         {
         case 1:
             clrs();
-            addrecord();
+            if (addrecord() == 0)
+            {
+                break;
+            }
             clrs();
             break;
+
         case 2:
             while (1)
             {
@@ -155,18 +163,14 @@ void UI()
                 }
                 else
                 {
-                    openrecord();
-                    if (wanttocontinue() == 0)
-                    {
-                        continue;
-                    }
-                    else
+                    if (openrecord() == 0)
                     {
                         break;
                     }
                 }
             }
             break;
+
         case 3:
             while (1)
             {
@@ -179,18 +183,14 @@ void UI()
                 }
                 else
                 {
-                    editrecord();
-                    if (wanttocontinue() == 0)
-                    {
-                        continue;
-                    }
-                    else
+                    if (editrecord() == 0)
                     {
                         break;
                     }
                 }
             }
             break;
+
         case 4:
             while (1)
             {
@@ -203,12 +203,7 @@ void UI()
                 }
                 else
                 {
-                    deleterecord();
-                    if (wanttocontinue() == 0)
-                    {
-                        continue;
-                    }
-                    else
+                    if (deleterecord() == 0)
                     {
                         break;
                     }
@@ -216,13 +211,14 @@ void UI()
             }
 
             break;
+
         case 5:
             clrs();
             while (1)
             {
                 clrs();
                 int choice2;
-                submenu();
+                submenu_userdata();
                 choice2 = getMenuChoice();
                 switch (choice2)
                 {
@@ -248,7 +244,50 @@ void UI()
                 break;
             }
             break;
+
         case 6:
+            clrs();
+            while (1)
+            {
+                clrs();
+                int choice3;
+                submenu_reminders();
+                choice3 = getMenuChoice();
+                switch (choice3)
+                {
+                case 1:
+                    clrs();
+                    printf("Add reminder");
+                    getch();
+                    // addreminder();
+                    continue;
+                case 2:
+                    clrs();
+                    printf("Remove reminder");
+                    getch();
+                    // removereminder();
+                    continue;
+                case 3:
+                    clrs();
+                    printf("Clear reminder");
+                    getch();
+                    // clearreminders();
+                    continue;
+                case 4:
+                    clrs();
+                    break;
+                default:
+                    clrs();
+                    printf("\tInvalid input. Please enter a valid option.");
+                    getch();
+                    clrs();
+                    continue;
+                }
+                break;
+            }
+            break;
+
+        case 7:
             clrs();
             printf("\tHave a great Day.");
             sleep(1.9);
@@ -338,15 +377,22 @@ void menu()
     printf("2. Open a record\n");
     printf("3. Edit a record\n");
     printf("4. Delete a record\n");
-    printf("5. Edit username, password, email address\n");
-    printf("6. Exit\n");
+    printf("5. Edit User data\n");
+    printf("6. Reminders\n");
+    printf("7. Exit\n");
 }
-void submenu()
+void submenu_userdata()
 {
-
     printf("1. Edit Username\n");
     printf("2. Edit Password\n");
     printf("3. Edit Email Address\n");
+    printf("4. Exit\n");
+}
+void submenu_reminders()
+{
+    printf("1. Add reminder\n");
+    printf("2. Remove reminder\n");
+    printf("3. Clear reminders\n");
     printf("4. Exit\n");
 }
 int getMenuChoice()
@@ -436,6 +482,41 @@ int records()
     }
 }
 
+int reminders()
+{
+    FILE *file;
+    file = fopen("Reminders.dat", "r");
+    if (file == NULL)
+    {
+        fclose(file);
+        clrs();
+        file = fopen("Reminders.dat", "w");
+        fclose(file);
+        reminders();
+    }
+    printf("\nReminders:\n");
+    fseek(file, 0, SEEK_END);     // Move the file pointer to the end of the file
+    long file_size = ftell(file); // Get the position of the file pointer (i.e., the file size)
+    fclose(file);
+    if (file_size == 0)
+    {
+        printf("There are no reminders.\n");
+        printf("\n");
+        return 0;
+    }
+    else
+    {
+        file = fopen("Reminders.dat", "r");
+        // Read and print the contents character by character until the EOF is reached
+        while (fgets(line, sizeof(line), file) != NULL)
+        {
+            printf("%s", line);
+        }
+        printf("\n");
+        fclose(file); // Close the file after reading
+        return 1;
+    }
+}
 void sign_up()
 {
     clrs();
@@ -541,13 +622,17 @@ void sign_up()
     // system("PDMS.exe");
 }
 
-void addrecord()
+int addrecord()
 {
     FILE *file;
     dtime(&dt.year, &dt.month, &dt.day, &dt.hour, &dt.min, &dt.sec);
     char record_name[50];
     printf("Record name: ");
     scanf("%s", record_name);
+    if (exit_module(record_name))
+    {
+        return 0;
+    }
     file = fopen("Records.dat", "a");
     fprintf(file, "(%d-%02d-%02d) %s \n", dt.year, dt.month, dt.day, record_name);
     fclose(file);
@@ -582,43 +667,57 @@ void addrecord()
     fclose(file);
 }
 
-void openrecord()
+int openrecord()
 {
     char record[50];
     printf("=> ");
     scanf("%s", record);
+    if (exit_module(record))
+    {
+        return 0;
+    }
     strcat(record, ".txt");
     FILE *file;
     file = fopen(record, "r");
     if (file == NULL)
     {
         perror("\nError! ");
-    }
-    // Read and print the contents character by character until the end of file (EOF) is reached
-    while (fgets(line, sizeof(line), file) != NULL)
-    {
-        printf("%s", line);
-    }
-    printf("\n\n");
-    fclose(file);
-    getch();
-}
-
-void editrecord()
-{
-    char record[50];
-    printf("=> ");
-    scanf("%s", record);
-    strcat(record, ".txt");
-    FILE *file;
-    file = fopen(record, "r");
-    printf("%s\n", record);
-    if (file == NULL)
-    {
-        perror("\nError! ");
+        getch();
     }
     else
     {
+        // Read and print the contents character by character until the end of file (EOF) is reached
+        clrs();
+        while (fgets(line, sizeof(line), file) != NULL)
+        {
+            printf("%s", line);
+        }
+        printf("\n\n");
+        fclose(file);
+        getch();
+    }
+}
+
+int editrecord()
+{
+    char record[50];
+    printf("=> ");
+    scanf("%s", record);
+    if (exit_module(record))
+    {
+        return 0;
+    }
+    strcat(record, ".txt");
+    FILE *file;
+    file = fopen(record, "r");
+    if (file == NULL)
+    {
+        perror("\nError! ");
+        getch();
+    }
+    else
+    {
+        printf("%s\n", record);
         system(record);
         printf("\nThe record is sucessfully edited.");
         getch();
@@ -627,58 +726,73 @@ void editrecord()
     fclose(file);
 }
 
-void deleterecord()
+int deleterecord()
 {
     char recordToDelete[100];
     char record[100];
-
     printf("=> ");
     scanf("%s", recordToDelete); // Reading user input, limiting the word to 99 characters
+    if (exit_module(recordToDelete))
+    {
+        return 0;
+    }
     strcpy(record, recordToDelete);
     strcat(record, ".txt");
-    remove(record);
-    FILE *originalFile, *tempFile;
-    char line[256];
-
-    // Open the original file in read mode
-    originalFile = fopen("Records.dat", "r");
-    if (originalFile == NULL)
+    FILE *file;
+    file = fopen(record, "r");
+    if (file == NULL)
     {
-        printf("Error opening the file.\n");
+        perror("\nError! ");
+        fclose(file);
+        getch();
     }
-
-    // Open a temporary file in write mode
-    tempFile = fopen("temp.dat", "w");
-    if (tempFile == NULL)
+    else
     {
-        printf("Error creating temporary file.\n");
-        fclose(originalFile);
-    }
+        fclose(file);
+        remove(record);
+        FILE *originalFile, *tempFile;
+        char line[256];
 
-    // Read lines from the original file, and write to the temporary file
-    while (fgets(line, sizeof(line), originalFile) != NULL)
-    {
-        if (strstr(line, recordToDelete) == NULL)
+        // Open the original record file in read mode
+        originalFile = fopen("Records.dat", "r");
+        if (originalFile == NULL)
         {
-            fputs(line, tempFile);
+            printf("Error opening the file.\n");
         }
+
+        // Open a temporary record file in write mode
+        tempFile = fopen("temp.dat", "w");
+        if (tempFile == NULL)
+        {
+            printf("Error creating temporary file.\n");
+            fclose(originalFile);
+        }
+
+        // Read lines from the original file, and write to the temporary file
+        while (fgets(line, sizeof(line), originalFile) != NULL)
+        {
+            if (strstr(line, recordToDelete) == NULL)
+            {
+                fputs(line, tempFile);
+            }
+        }
+
+        // Close both files
+        fclose(originalFile);
+        fclose(tempFile);
+
+        // Delete the original file
+        remove("Records.dat");
+
+        // Rename the temporary file to the original file name
+        if (rename("temp.dat", "Records.dat") != 0)
+        {
+            printf("Error renaming the temporary file.\n");
+        }
+        printf("\nThe record has been deleted successfully.");
+        getch();
+        clrs();
     }
-
-    // Close both files
-    fclose(originalFile);
-    fclose(tempFile);
-
-    // Delete the original file
-    remove("Records.dat");
-
-    // Rename the temporary file to the original file name
-    if (rename("temp.dat", "Records.dat") != 0)
-    {
-        printf("Error renaming the temporary file.\n");
-    }
-    printf("\nThe record has been deleted successfully.");
-    getch();
-    clrs();
 }
 
 void editusername()
@@ -834,6 +948,16 @@ void editemailaddress()
     clrs();
     printf("Email address replaced successfully.\n");
     getch();
+}
+
+bool exit_module(const char *filename)
+{
+    FILE *file = fopen(filename, "r");
+    if (strcmp(filename, ".") == 0)
+    {
+        return true; // File exists
+    }
+    return false; // File doesn't exist
 }
 
 void dtime(int *y, int *m, int *d, int *h, int *mi, int *s)
