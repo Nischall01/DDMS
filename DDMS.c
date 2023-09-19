@@ -1,8 +1,13 @@
 #include <stdio.h>
-#include <conio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _WIN32
 #include <windows.h>
+#define nap(x) Sleep(x * 1000) // Define nap for Windows
+#else
+#include <unistd.h>
+#define nap(x) sleep(x) // Define nap for UNIX
+#endif
 #include <unistd.h>
 #include <stdbool.h>
 #include <errno.h>
@@ -33,6 +38,7 @@ void submenu_userdata();
 int getMenuChoice();
 int wanttocontinue();
 void clearInputBuffer();
+void hold();
 void notriesleft();
 void clrs();
 void UI();
@@ -132,7 +138,6 @@ int main()
 
 void UI()
 {
-    char fname[256]; // Declare a character array to store the filename
     int choice;
     while (1)
     {
@@ -237,7 +242,7 @@ void UI()
                 default:
                     clrs();
                     printf("\tInvalid input. Please enter a valid option.");
-                    getch();
+                    getchar();
                     clrs();
                     continue;
                 }
@@ -258,19 +263,19 @@ void UI()
                 case 1:
                     clrs();
                     printf("Add reminder");
-                    getch();
+                    getchar();
                     // addreminder();
                     continue;
                 case 2:
                     clrs();
                     printf("Remove reminder");
-                    getch();
+                    getchar();
                     // removereminder();
                     continue;
                 case 3:
                     clrs();
                     printf("Clear reminder");
-                    getch();
+                    getchar();
                     // clearreminders();
                     continue;
                 case 4:
@@ -279,7 +284,7 @@ void UI()
                 default:
                     clrs();
                     printf("\tInvalid input. Please enter a valid option.");
-                    getch();
+                    getchar();
                     clrs();
                     continue;
                 }
@@ -290,12 +295,12 @@ void UI()
         case 7:
             clrs();
             printf("\tHave a great Day.");
-            sleep(1.9);
+            nap(1.9);
             exit(0);
         default:
             clrs();
             printf("\tInvalid input. Please enter a valid option.");
-            getch();
+            getchar();
             clrs();
             break;
         }
@@ -335,7 +340,7 @@ void checkuserfile()
             fclose(file);
             printf("Error in the user file. Please Signup\n");
             printf("\nPress any key to continue !\n");
-            getch();
+            getchar();
             sign_up();
         }
         else if (lineCount < 3)
@@ -343,7 +348,7 @@ void checkuserfile()
             fclose(file);
             printf("Error in the user file. Please Signup\n");
             printf("\nPress any key to continue !\n");
-            getch();
+            getchar();
             sign_up();
         }
     }
@@ -358,7 +363,7 @@ void checkuserfile()
 void clrs()
 {
     system("cls");
-    printf("\x1B[2J\x1B[H");
+    printf("\033[H\033[J");
 }
 void clearInputBuffer()
 {
@@ -368,32 +373,32 @@ void clearInputBuffer()
 void press()
 {
     printf("\nPress any key to continue !\n");
-    getch();
+    getchar();
     clrs();
 }
 void menu()
 {
-    printf("1. Add a new record\n");
-    printf("2. Open a record\n");
-    printf("3. Edit a record\n");
-    printf("4. Delete a record\n");
-    printf("5. Edit User data\n");
-    printf("6. Reminders\n");
-    printf("7. Exit\n");
+    printf("[1] Add a new record\n");
+    printf("[2] Open a record\n");
+    printf("[3] Edit a record\n");
+    printf("[4] Delete a record\n");
+    printf("[5] Edit User data\n");
+    printf("[6] Reminders\n");
+    printf("[7] Exit\n");
 }
 void submenu_userdata()
 {
-    printf("1. Edit Username\n");
-    printf("2. Edit Password\n");
-    printf("3. Edit Email Address\n");
-    printf("4. Exit\n");
+    printf("[1] Edit Username\n");
+    printf("[2] Edit Password\n");
+    printf("[3] Edit Email Address\n");
+    printf("[4] Exit\n");
 }
 void submenu_reminders()
 {
-    printf("1. Add reminder\n");
-    printf("2. Remove reminder\n");
-    printf("3. Clear reminders\n");
-    printf("4. Exit\n");
+    printf("[1] Add reminder\n");
+    printf("[2] Remove reminder\n");
+    printf("[3] Clear reminders\n");
+    printf("[4] Exit\n");
 }
 int getMenuChoice()
 {
@@ -433,7 +438,7 @@ int wanttocontinue()
         {
             clrs();
             printf("\tInvalid input. Please enter a valid option.");
-            getch();
+            getchar();
             continue;
         }
     }
@@ -442,7 +447,7 @@ void notriesleft()
 {
     clrs();
     printf("\n\t********** No tries left. **********");
-    sleep(2);
+    nap(2);
     exit(0);
 }
 
@@ -545,7 +550,7 @@ void sign_up()
         if (buffer[i] == ' ')
         {
             printf("!!Invalid Input!! Username cannot contain spaces.\n");
-            getch();
+            getchar();
             fclose(file);
             sign_up();
         }
@@ -553,7 +558,7 @@ void sign_up()
     if (strlen(buffer) == 0)
     {
         printf("!! This field cannot be empty.\n");
-        getch();
+        getchar();
         fclose(file);
         sign_up();
     }
@@ -574,7 +579,7 @@ void sign_up()
         if (buffer[i] == ' ')
         {
             printf("!!Invalid Input!! Password cannot contain spaces.\n");
-            getch();
+            getchar();
             fclose(file);
             sign_up();
         }
@@ -582,7 +587,7 @@ void sign_up()
     if (strlen(buffer) == 0)
     {
         printf("!! This field cannot be empty.\n");
-        getch();
+        getchar();
         fclose(file);
         sign_up();
     }
@@ -603,7 +608,7 @@ void sign_up()
         if (buffer[i] == ' ')
         {
             printf("!!Invalid Input!! Email address cannot contain spaces.\n");
-            getch();
+            getchar();
             fclose(file);
             sign_up();
         }
@@ -611,7 +616,7 @@ void sign_up()
     if (strlen(buffer) == 0)
     {
         printf("!! This field cannot be empty.\n");
-        getch();
+        getchar();
         fclose(file);
         sign_up();
     }
@@ -651,17 +656,17 @@ int addrecord()
         printf("=> ");
         scanf(" %[^\n]", record_data); // Read input until newline is encountered
 
-        // Write the additional record data to the file
+        // Add the new record to the record file
         fprintf(file, "\n%s", record_data);
         fclose(file);
         printf("\nNew record added successfully.");
-        getch();
+        hold();
         clrs();
     }
     else
     {
         printf("Error: Unable to create the record file.\n");
-        getch();
+        hold();
         clrs();
     }
     fclose(file);
@@ -682,7 +687,7 @@ int openrecord()
     if (file == NULL)
     {
         perror("\nError! ");
-        getch();
+        getchar();
     }
     else
     {
@@ -693,8 +698,8 @@ int openrecord()
             printf("%s", line);
         }
         printf("\n\n");
+        hold();
         fclose(file);
-        getch();
     }
 }
 
@@ -713,14 +718,14 @@ int editrecord()
     if (file == NULL)
     {
         perror("\nError! ");
-        getch();
+        getchar();
     }
     else
     {
         printf("%s\n", record);
         system(record);
         printf("\nThe record is sucessfully edited.");
-        getch();
+        hold();
         clrs();
     }
     fclose(file);
@@ -744,7 +749,7 @@ int deleterecord()
     {
         perror("\nError! ");
         fclose(file);
-        getch();
+        hold();
     }
     else
     {
@@ -757,14 +762,16 @@ int deleterecord()
         originalFile = fopen("Records.dat", "r");
         if (originalFile == NULL)
         {
-            printf("Error opening the file.\n");
+            perror("Error! \n");
+            hold();
         }
 
         // Open a temporary record file in write mode
         tempFile = fopen("temp.dat", "w");
         if (tempFile == NULL)
         {
-            printf("Error creating temporary file.\n");
+            perror("Error! \n");
+            hold();
             fclose(originalFile);
         }
 
@@ -790,7 +797,7 @@ int deleterecord()
             printf("Error renaming the temporary file.\n");
         }
         printf("\nThe record has been deleted successfully.");
-        getch();
+        hold();
         clrs();
     }
 }
@@ -843,7 +850,7 @@ void editusername()
     }
     clrs();
     printf("\tUsername replaced successfully.\n");
-    getch();
+    hold();
 }
 
 void editpassword()
@@ -895,7 +902,7 @@ void editpassword()
     }
     clrs();
     printf("\tPassword replaced successfully.\n");
-    getch();
+    hold();
 }
 
 void editemailaddress()
@@ -947,17 +954,21 @@ void editemailaddress()
     }
     clrs();
     printf("Email address replaced successfully.\n");
-    getch();
+    hold();
 }
 
 bool exit_module(const char *filename)
 {
-    FILE *file = fopen(filename, "r");
     if (strcmp(filename, ".") == 0)
     {
         return true; // File exists
     }
     return false; // File doesn't exist
+}
+void hold()
+{
+    clearInputBuffer();
+    getchar();
 }
 
 void dtime(int *y, int *m, int *d, int *h, int *mi, int *s)
