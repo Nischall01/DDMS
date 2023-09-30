@@ -48,6 +48,7 @@ int addrecord();
 int openrecord();
 int editrecord();
 int deleterecord();
+int addreminder();
 void editusername();
 void editpassword();
 void editemailaddress();
@@ -262,9 +263,7 @@ void UI()
                 {
                 case 1:
                     clrs();
-                    printf("Add reminder");
-                    getchar();
-                    // addreminder();
+                    addreminder();
                     continue;
                 case 2:
                     clrs();
@@ -499,7 +498,7 @@ int reminders()
         fclose(file);
         reminders();
     }
-    printf("\nReminders:\n");
+    printf("\nReminders:");
     fseek(file, 0, SEEK_END);     // Move the file pointer to the end of the file
     long file_size = ftell(file); // Get the position of the file pointer (i.e., the file size)
     fclose(file);
@@ -801,7 +800,70 @@ int deleterecord()
         clrs();
     }
 }
-
+int addreminder()
+{
+    int when;
+    FILE *file;
+    dtime(&dt.year, &dt.month, &dt.day, &dt.hour, &dt.min, &dt.sec);
+    char reminder_title[50], date[15];
+    int day, hour, minute;
+    printf("Reminder Title: ");
+    scanf("%s", reminder_title);
+    printf("\n1. Today\n");
+    printf("2. Tommorrow\n");
+    printf("3. Day\n");
+    printf("4. Month and day\n");
+    printf("5. Full date\n");
+    printf("=> ");
+    scanf("%d", &when);
+    switch (when)
+    {
+    case 1:
+        strcpy(date, "Today");
+        break;
+    case 2:
+        strcpy(date, "Tommorrow");
+        break;
+    case 3:
+        printf("Enter Day: ");
+        scanf("%d", day);
+        if (day > 30)
+        {
+            printf("Please enter a valid day.");
+            addreminder();
+        }
+        sprintf(date, "%d/%d", day, dt.month);
+        break;
+    default:
+        break;
+    }
+    printf("\t{Due time}\n");
+    printf("Hour: ");
+    scanf("%d", &hour);
+    if (hour > 24)
+    {
+        printf("Please enter a valid value.");
+        clrs();
+        addreminder();
+    }
+    printf("Minute: ");
+    scanf("%d", &minute);
+    if (minute > 60)
+    {
+        printf("Please enter a valid value.");
+        clrs();
+        addreminder();
+    }
+    if (exit_module(reminder_title))
+    {
+        return 0;
+    }
+    file = fopen("Reminders.dat", "a");
+    fprintf(file, "(%s) (%d:%d) %s \n", date, hour, minute, reminder_title);
+    fclose(file);
+    printf("\nNew reminder added successfully.");
+    hold();
+}
 void editusername()
 {
     char replacement[50];
@@ -852,7 +914,6 @@ void editusername()
     printf("\tUsername replaced successfully.\n");
     hold();
 }
-
 void editpassword()
 {
     char replacement[50];
