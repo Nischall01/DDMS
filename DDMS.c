@@ -49,6 +49,8 @@ int openrecord();
 int editrecord();
 int deleterecord();
 int addreminder();
+int removereminder();
+int clearreminders();
 void editusername();
 void editpassword();
 void editemailaddress();
@@ -267,15 +269,22 @@ void UI()
                     continue;
                 case 2:
                     clrs();
-                    printf("Remove reminder");
-                    getchar();
-                    // removereminder();
+                    if (reminders() == 0)
+                    {
+                        press();
+                        continue;
+                        ;
+                    }
+                    removereminder();
                     continue;
                 case 3:
                     clrs();
-                    printf("Clear reminder");
-                    getchar();
-                    // clearreminders();
+                    if (reminders() == 0)
+                    {
+                        press();
+                        continue;
+                    }
+                    clearreminders();
                     continue;
                 case 4:
                     clrs();
@@ -294,7 +303,7 @@ void UI()
         case 7:
             clrs();
             printf("\tHave a great Day.");
-            nap(1.9);
+            nap(1.7);
             exit(0);
         default:
             clrs();
@@ -377,27 +386,27 @@ void press()
 }
 void menu()
 {
-    printf("1] Add a new record\n");
-    printf("2] Open a record\n");
-    printf("3] Edit a record\n");
-    printf("4] Delete a record\n");
-    printf("5] Edit User data\n");
-    printf("6] Reminders\n");
-    printf("7] Exit\n");
+    printf("1. Add a new record\n");
+    printf("2. Open a record\n");
+    printf("3. Edit a record\n");
+    printf("4. Delete a record\n");
+    printf("5. Edit User data\n");
+    printf("6. Reminders\n");
+    printf("7. Exit\n");
 }
 void submenu_userdata()
 {
-    printf("1] Edit Username\n");
-    printf("2] Edit Password\n");
-    printf("3] Edit Email Address\n");
-    printf("4] Exit\n");
+    printf("1. Edit Username\n");
+    printf("2. Edit Password\n");
+    printf("3. Edit Email Address\n");
+    printf("4. Exit\n");
 }
 void submenu_reminders()
 {
-    printf("1] Add reminder\n");
-    printf("2] Remove reminder\n");
-    printf("3] Clear reminders\n");
-    printf("4] Exit\n");
+    printf("1. Add reminder\n");
+    printf("2. Remove reminder\n");
+    printf("3. Clear reminders\n");
+    printf("4. Exit\n");
 }
 int getMenuChoice()
 {
@@ -498,7 +507,8 @@ int reminders()
         fclose(file);
         reminders();
     }
-    printf("\nReminders:");
+    printf("Reminders:\n");
+    printf("\n");
     fseek(file, 0, SEEK_END);     // Move the file pointer to the end of the file
     long file_size = ftell(file); // Get the position of the file pointer (i.e., the file size)
     fclose(file);
@@ -800,31 +810,40 @@ int deleterecord()
         clrs();
     }
 }
+
 int addreminder()
 {
-    int when;
+    char when[2];
     FILE *file;
     dtime(&dt.year, &dt.month, &dt.day, &dt.hour, &dt.min, &dt.sec);
     char reminder_title[50], date[15];
     int day, hour, minute;
     printf("Reminder Title: ");
     scanf("%s", reminder_title);
+    if (exit_module(reminder_title))
+    {
+        return 0;
+    }
     printf("\n1. Today\n");
     printf("2. Tommorrow\n");
     printf("3. Day\n");
     printf("4. Month and day\n");
     printf("5. Full date\n");
     printf("=> ");
-    scanf("%d", &when);
-    switch (when)
+    scanf("%s", when);
+    if (exit_module(when))
     {
-    case 1:
+        return 0;
+    }
+    switch (when[0])
+    {
+    case '1':
         strcpy(date, "Today");
         break;
-    case 2:
+    case '2':
         strcpy(date, "Tommorrow");
         break;
-    case 3:
+    case '3':
         printf("Enter Day: ");
         scanf("%d", day);
         if (day > 30)
@@ -834,6 +853,8 @@ int addreminder()
         }
         sprintf(date, "%d/%d", day, dt.month);
         break;
+    case '.':
+        return 0;
     default:
         break;
     }
@@ -864,6 +885,89 @@ int addreminder()
     printf("\nNew reminder added successfully.");
     hold();
 }
+
+int removereminder()
+{
+    int lineNumber;
+    printf("\tEnter the reminder to be deleted using the line number.\n");
+    printf("=> ");
+    scanf("%d", &lineNumber);
+    if (lineNumber == 0)
+    {
+        return 0;
+    }
+    FILE *originalFile, *tempFile;
+
+    // Open the original record file in read mode
+    originalFile = fopen("Reminders.dat", "r");
+    if (originalFile == NULL)
+    {
+        perror("Error! \n");
+        hold();
+    }
+
+    // Open a temporary record file in write mode
+    tempFile = fopen("temp.dat", "w");
+    if (tempFile == NULL)
+    {
+        perror("Error! \n");
+        hold();
+        fclose(originalFile);
+    }
+
+    // Read lines from the original file, and write to the temporary file
+    char line[256];
+    int currentLineNumber = 1;
+
+    while (fgets(line, sizeof(line), originalFile) != NULL)
+    {
+        if (currentLineNumber != lineNumber)
+        {
+            fputs(line, tempFile);
+        }
+        currentLineNumber++;
+    }
+
+    // Close both files
+    fclose(originalFile);
+    fclose(tempFile);
+
+    // Delete the original file
+    remove("Reminders.dat");
+
+    // Rename the temporary file to the original file name
+    if (rename("temp.dat", "Reminders.dat") != 0)
+    {
+        printf("Error renaming the temporary file.\n");
+    }
+    printf("\nThe reminder has been deleted successfully.");
+    hold();
+    clrs();
+}
+
+int clearreminders()
+{
+    char yorn[2];
+    printf("Are you sure? y/n\n=>");
+    scanf("%s", yorn);
+    if (strcmp(yorn, "y") == 0)
+    {
+        FILE *fp = fopen("Reminders.dat", "w");
+        fclose(fp);
+        printf("The Reminders are cleared.");
+    }
+    else if (strcmp(yorn, "n") == 0)
+    {
+        return 0;
+    }
+    else
+    {
+        printf("Error! Invalid input.");
+    }
+    hold();
+    clrs();
+}
+
 void editusername()
 {
     char replacement[50];
