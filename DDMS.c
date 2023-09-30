@@ -377,27 +377,27 @@ void press()
 }
 void menu()
 {
-    printf("[1] Add a new record\n");
-    printf("[2] Open a record\n");
-    printf("[3] Edit a record\n");
-    printf("[4] Delete a record\n");
-    printf("[5] Edit User data\n");
-    printf("[6] Reminders\n");
-    printf("[7] Exit\n");
+    printf("1] Add a new record\n");
+    printf("2] Open a record\n");
+    printf("3] Edit a record\n");
+    printf("4] Delete a record\n");
+    printf("5] Edit User data\n");
+    printf("6] Reminders\n");
+    printf("7] Exit\n");
 }
 void submenu_userdata()
 {
-    printf("[1] Edit Username\n");
-    printf("[2] Edit Password\n");
-    printf("[3] Edit Email Address\n");
-    printf("[4] Exit\n");
+    printf("1] Edit Username\n");
+    printf("2] Edit Password\n");
+    printf("3] Edit Email Address\n");
+    printf("4] Exit\n");
 }
 void submenu_reminders()
 {
-    printf("[1] Add reminder\n");
-    printf("[2] Remove reminder\n");
-    printf("[3] Clear reminders\n");
-    printf("[4] Exit\n");
+    printf("1] Add reminder\n");
+    printf("2] Remove reminder\n");
+    printf("3] Clear reminders\n");
+    printf("4] Exit\n");
 }
 int getMenuChoice()
 {
