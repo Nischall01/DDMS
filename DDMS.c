@@ -79,7 +79,7 @@ int main()
     char enteredeaddy[CH_LIMIT];
     // Extract the username, password and email address.
     FILE *file;
-    file = fopen("user_info.dat", "r");
+    file = fopen("Program_files/user_info.dat", "r");
     fscanf(file, "%s %s %s", name, pass, email);
     fclose(file); // File handling STOPs.
 
@@ -144,10 +144,12 @@ void UI()
     int choice;
     while (1)
     {
+        int choice;
         clrs();
         reminders();
         menu();
         choice = getMenuChoice();
+
         switch (choice)
         {
         case 1:
@@ -299,8 +301,22 @@ void UI()
                 break;
             }
             break;
-
         case 7:
+            clrs();
+            FILE *file;
+            file = fopen("README.pdf", "r");
+            if (file == NULL)
+            {
+                perror("Error! ");
+                getchar();
+            }
+            else
+            {
+                system("README.pdf");
+            }
+            fclose(file);
+            break;
+        case 8:
             clrs();
             printf("\tHave a great Day.");
             nap(1.7);
@@ -319,7 +335,7 @@ void UI()
 void checkuserfile()
 {
     FILE *file;
-    file = fopen("user_info.dat", "r+"); // Opens the file the holds user info to read
+    file = fopen("Program_files/user_info.dat", "r+"); // Opens the file the holds user info to read
     bool isEmptyLine = true;
     int lineCount = 1;
     char ch;
@@ -363,7 +379,7 @@ void checkuserfile()
     else
     {
         rewind(file);
-        file = fopen("user_info.dat", "w");
+        file = fopen("Program_files/user_info.dat", "w");
         sign_up();
     }
     fclose(file);
@@ -392,7 +408,8 @@ void menu()
     printf("4. Delete a record\n");
     printf("5. Edit User data\n");
     printf("6. Reminders\n");
-    printf("7. Exit\n");
+    printf("7. Help/About\n");
+    printf("8. Exit\n");
 }
 void submenu_userdata()
 {
@@ -411,12 +428,13 @@ void submenu_reminders()
 int getMenuChoice()
 {
     int choice;
-    int isnotint;
     printf("=> ");
-    isnotint = scanf("%d", &choice);
-
-    if (isnotint == 0)
+    if (scanf("%d", &choice) != 1)
     {
+        printf("Invalid input. Please enter a number.\n");
+        getchar();
+        clrs();
+        // Clear the input buffer
         clearInputBuffer();
     }
     else
@@ -462,12 +480,12 @@ void notriesleft()
 int records()
 {
     FILE *file;
-    file = fopen("Records.dat", "r");
+    file = fopen("Program_files/Records.dat", "r");
     if (file == NULL)
     {
         fclose(file);
         clrs();
-        file = fopen("Records.dat", "w");
+        file = fopen("Program_files/Records.dat", "w");
         fclose(file);
         records();
     }
@@ -483,7 +501,7 @@ int records()
     }
     else
     {
-        file = fopen("Records.dat", "r");
+        file = fopen("Program_files/Records.dat", "r");
         // Read and print the contents character by character until the EOF is reached
         while (fgets(line, sizeof(line), file) != NULL)
         {
@@ -498,12 +516,12 @@ int records()
 int reminders()
 {
     FILE *file;
-    file = fopen("Reminders.dat", "r");
+    file = fopen("Program_files/Reminders.dat", "r");
     if (file == NULL)
     {
         fclose(file);
         clrs();
-        file = fopen("Reminders.dat", "w");
+        file = fopen("Program_files/Reminders.dat", "w");
         fclose(file);
         reminders();
     }
@@ -520,7 +538,7 @@ int reminders()
     }
     else
     {
-        file = fopen("Reminders.dat", "r");
+        file = fopen("Program_files/Reminders.dat", "r");
         // Read and print the contents character by character until the EOF is reached
         while (fgets(line, sizeof(line), file) != NULL)
         {
@@ -536,7 +554,7 @@ void sign_up()
     clrs();
     char buffer[MAX_LINE];
     FILE *file;
-    file = fopen("user_info.dat", "w"); // Open the file in "write" mode
+    file = fopen("Program_files/user_info.dat", "w"); // Open the file in "write" mode
     if (file == NULL)
     {
         printf("Error opening file.\n");
@@ -647,7 +665,7 @@ int addrecord()
     {
         return 0;
     }
-    file = fopen("Records.dat", "a");
+    file = fopen("Program_files/Records.dat", "a");
     fprintf(file, "(%d-%02d-%02d) %s \n", dt.year, dt.month, dt.day, record_name);
     fclose(file);
     strcat(record_name, ".txt");
@@ -768,7 +786,7 @@ int deleterecord()
         char line[256];
 
         // Open the original record file in read mode
-        originalFile = fopen("Records.dat", "r");
+        originalFile = fopen("Program_files/Records.dat", "r");
         if (originalFile == NULL)
         {
             perror("Error! \n");
@@ -798,10 +816,10 @@ int deleterecord()
         fclose(tempFile);
 
         // Delete the original file
-        remove("Records.dat");
+        remove("Program_files/Records.dat");
 
         // Rename the temporary file to the original file name
-        if (rename("temp.dat", "Records.dat") != 0)
+        if (rename("temp.dat", "Program_files/Records.dat") != 0)
         {
             printf("Error renaming the temporary file.\n");
         }
@@ -879,7 +897,7 @@ int addreminder()
     {
         return 0;
     }
-    file = fopen("Reminders.dat", "a");
+    file = fopen("Program_files/Reminders.dat", "a");
     fprintf(file, "(%s) (%d:%d) %s \n", date, hour, minute, reminder_title);
     fclose(file);
     printf("\nNew reminder added successfully.");
@@ -899,7 +917,7 @@ int removereminder()
     FILE *originalFile, *tempFile;
 
     // Open the original record file in read mode
-    originalFile = fopen("Reminders.dat", "r");
+    originalFile = fopen("Program_files/Reminders.dat", "r");
     if (originalFile == NULL)
     {
         perror("Error! \n");
@@ -933,10 +951,10 @@ int removereminder()
     fclose(tempFile);
 
     // Delete the original file
-    remove("Reminders.dat");
+    remove("Program_files/Reminders.dat");
 
     // Rename the temporary file to the original file name
-    if (rename("temp.dat", "Reminders.dat") != 0)
+    if (rename("temp.dat", "Program_files/Reminders.dat") != 0)
     {
         printf("Error renaming the temporary file.\n");
     }
@@ -952,7 +970,7 @@ int clearreminders()
     scanf("%s", yorn);
     if (strcmp(yorn, "y") == 0)
     {
-        FILE *fp = fopen("Reminders.dat", "w");
+        FILE *fp = fopen("Program_files/Reminders.dat", "w");
         fclose(fp);
         printf("The Reminders are cleared.");
     }
@@ -976,7 +994,7 @@ void editusername()
 
     FILE *original;
     FILE *temp;
-    original = fopen("user_info.dat", "r");
+    original = fopen("Program_files/user_info.dat", "r");
     temp = fopen("temp.dat", "w");
 
     if (original == NULL || temp == NULL)
@@ -1004,12 +1022,12 @@ void editusername()
     }
     fclose(original); // Close the original file after reading
     fclose(temp);
-    if (remove("user_info.dat") != 0)
+    if (remove("Program_files/user_info.dat") != 0)
     {
         perror("Error removing the file!");
         printf("\nError no.%d\n", errno);
     }
-    if (rename("temp.dat", "user_info.dat") != 0)
+    if (rename("temp.dat", "Program_files/user_info.dat") != 0)
     {
         perror("Error renaming the file!");
         printf("\nError no.%d\n", errno);
@@ -1026,7 +1044,7 @@ void editpassword()
 
     FILE *original;
     FILE *temp;
-    original = fopen("user_info.dat", "r");
+    original = fopen("Program_files/user_info.dat", "r");
     temp = fopen("temp.dat", "w");
 
     if (original == NULL || temp == NULL)
@@ -1055,12 +1073,12 @@ void editpassword()
     }
     fclose(original); // Close the original file after reading
     fclose(temp);
-    if (remove("user_info.dat") != 0)
+    if (remove("Program_files/user_info.dat") != 0)
     {
         perror("Error removing the file!");
         printf("\nError no.%d\n", errno);
     }
-    if (rename("temp.dat", "user_info.dat") != 0)
+    if (rename("temp.dat", "Program_files/user_info.dat") != 0)
     {
         perror("Error renaming the file!");
         printf("\nError no.%d\n", errno);
@@ -1078,7 +1096,7 @@ void editemailaddress()
 
     FILE *original;
     FILE *temp;
-    original = fopen("user_info.dat", "r");
+    original = fopen("Program_files/user_info.dat", "r");
     temp = fopen("temp.dat", "w");
 
     if (original == NULL || temp == NULL)
@@ -1107,12 +1125,12 @@ void editemailaddress()
     }
     fclose(original); // Close the original file after reading
     fclose(temp);
-    if (remove("user_info.dat") != 0)
+    if (remove("Program_files/user_info.dat") != 0)
     {
         perror("Error removing the file!");
         printf("\nError no.%d\n", errno);
     }
-    if (rename("temp.dat", "user_info.dat") != 0)
+    if (rename("temp.dat", "Program_files/user_info.dat") != 0)
     {
         perror("Error renaming the file!");
         printf("\nError no.%d\n", errno);
