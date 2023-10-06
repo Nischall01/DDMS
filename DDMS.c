@@ -49,7 +49,7 @@ int openrecord();
 int editrecord();
 int deleterecord();
 int addreminder();
-int removereminder();
+int deletereminder();
 int clearreminders();
 void editusername();
 void editpassword();
@@ -173,7 +173,7 @@ void UI()
                 }
                 else
                 {
-                    if (openrecord() == 0)
+                    if (openrecord() == 1)
                     {
                         break;
                     }
@@ -193,7 +193,7 @@ void UI()
                 }
                 else
                 {
-                    if (editrecord() == 0)
+                    if (editrecord() == 1)
                     {
                         break;
                     }
@@ -213,7 +213,7 @@ void UI()
                 }
                 else
                 {
-                    if (deleterecord() == 0)
+                    if (deleterecord() == 1)
                     {
                         break;
                     }
@@ -277,7 +277,7 @@ void UI()
                         continue;
                         ;
                     }
-                    removereminder();
+                    deletereminder();
                     continue;
                 case 3:
                     clrs();
@@ -682,7 +682,10 @@ int addrecord()
         char record_data[100];
         printf("=> ");
         scanf(" %[^\n]", record_data); // Read input until newline is encountered
-
+        if (exit_module(record_data))
+        {
+            return 1;
+        }
         // Add the new record to the record file
         fprintf(file, "\n%s", record_data);
         fclose(file);
@@ -706,7 +709,7 @@ int openrecord()
     scanf("%s", record);
     if (exit_module(record))
     {
-        return 0;
+        return 1;
     }
     strcat(record, ".txt");
     FILE *file;
@@ -714,7 +717,7 @@ int openrecord()
     if (file == NULL)
     {
         perror("\nError! ");
-        getchar();
+        hold();
     }
     else
     {
@@ -727,6 +730,7 @@ int openrecord()
         printf("\n\n");
         hold();
         fclose(file);
+        return 0;
     }
 }
 
@@ -737,7 +741,7 @@ int editrecord()
     scanf("%s", record);
     if (exit_module(record))
     {
-        return 0;
+        return 1;
     }
     strcat(record, ".txt");
     FILE *file;
@@ -745,7 +749,7 @@ int editrecord()
     if (file == NULL)
     {
         perror("\nError! ");
-        getchar();
+        hold();
     }
     else
     {
@@ -754,6 +758,7 @@ int editrecord()
         printf("\nThe record is sucessfully edited.");
         hold();
         clrs();
+        return 0;
     }
     fclose(file);
 }
@@ -766,7 +771,7 @@ int deleterecord()
     scanf("%s", recordToDelete); // Reading user input, limiting the word to 99 characters
     if (exit_module(recordToDelete))
     {
-        return 0;
+        return 1;
     }
     strcpy(record, recordToDelete);
     strcat(record, ".txt");
@@ -775,8 +780,8 @@ int deleterecord()
     if (file == NULL)
     {
         perror("\nError! ");
-        fclose(file);
         hold();
+        fclose(file);
     }
     else
     {
@@ -826,6 +831,7 @@ int deleterecord()
         printf("\nThe record has been deleted successfully.");
         hold();
         clrs();
+        return 0;
     }
 }
 
@@ -836,8 +842,17 @@ int addreminder()
     dtime(&dt.year, &dt.month, &dt.day, &dt.hour, &dt.min, &dt.sec);
     char reminder_title[50], date[15];
     int day, hour, minute;
+    int intid;
+    char stringid[5];
+    printf("Reminder Id: ");
+    scanf("%d", &intid);
+    sprintf(stringid, "%d", intid);
+    if (exit_module(stringid))
+    {
+        return 0;
+    }
     printf("Reminder Title: ");
-    scanf("%s", reminder_title);
+    scanf(" %[^\n]", reminder_title);
     if (exit_module(reminder_title))
     {
         return 0;
@@ -898,19 +913,19 @@ int addreminder()
         return 0;
     }
     file = fopen("Program_files/Reminders.dat", "a");
-    fprintf(file, "(%s) (%d:%d) %s \n", date, hour, minute, reminder_title);
+    fprintf(file, "%d (%s) (%d:%d) %s \n", intid, date, hour, minute, reminder_title);
     fclose(file);
     printf("\nNew reminder added successfully.");
     hold();
 }
 
-int removereminder()
+int deletereminder()
 {
-    int lineNumber;
-    printf("\tEnter the reminder to be deleted using the line number.\n");
+    char idtodelete[5];
+    printf("\tEnter the id of the reminder to be deleted.\n");
     printf("=> ");
-    scanf("%d", &lineNumber);
-    if (lineNumber == 0)
+    scanf("%s", idtodelete);
+    if (exit_module(idtodelete))
     {
         return 0;
     }
@@ -935,15 +950,14 @@ int removereminder()
 
     // Read lines from the original file, and write to the temporary file
     char line[256];
-    int currentLineNumber = 1;
-
-    while (fgets(line, sizeof(line), originalFile) != NULL)
+    while (fgets(line, sizeof(line), originalFile))
     {
-        if (currentLineNumber != lineNumber)
+        // Check if the line contains the ID to be deleted
+        if (strstr(line, idtodelete) == NULL)
         {
+            // If not, write it to the temporary file
             fputs(line, tempFile);
         }
-        currentLineNumber++;
     }
 
     // Close both files
