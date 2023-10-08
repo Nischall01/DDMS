@@ -72,6 +72,7 @@ char line[MAX_LINE];
 int main()
 {
     clrs();
+    system("start /B Reminder_notifier.exe");
     checkuserfile();
     login();
     UI();
@@ -668,10 +669,11 @@ void sign_up()
 int addrecord()
 {
     clrs();
-    FILE *file;
+    FILE *file, *fp;
     dtime(&dt.year, &dt.month, &dt.day, &dt.hour, &dt.min, &dt.sec);
     char record_name[50];
-    char lc_record_name[50];
+    char lc_record_name[50];     // To store record_name in lowercase.
+    char lc_record_name_txt[50]; // To add .txt on the lowercase record_name
     int record_name_len;
     printf("Record name: ");
     scanf(" %[^\n]", record_name);
@@ -696,10 +698,20 @@ int addrecord()
     }
     // Initialize lc_record_name to all null characters
     memset(lc_record_name, '\0', sizeof(lc_record_name));
+    memset(lc_record_name_txt, '\0', sizeof(lc_record_name_txt));
     // Convert each character to lowercase and store in lc_record_name
     for (int i = 0; record_name[i]; i++)
     {
         lc_record_name[i] = tolower((unsigned char)record_name[i]);
+        lc_record_name_txt[i] = tolower((unsigned char)record_name[i]);
+    }
+
+    if (fopen(strcat(lc_record_name_txt, ".txt"), "r") != NULL)
+    {
+        clrs();
+        printf("%s already exists.", lc_record_name_txt);
+        hold();
+        return 0;
     }
 
     // Add the record in the record entry
@@ -878,7 +890,7 @@ int addreminder()
 {
     clrs();
     char when[2];
-    FILE *file;
+
     dtime(&dt.year, &dt.month, &dt.day, &dt.hour, &dt.min, &dt.sec);
     char reminder_title[50], date[15];
     int month, day, hour, minute;
@@ -907,9 +919,11 @@ int addreminder()
             clrs();
             printf("A reminder with same Id already exits. Enter a different Id.");
             hold();
+            fclose(fp);
             return 0;
         }
     }
+    fclose(fp);
 
     if (exit_module(stringid))
     {
@@ -937,6 +951,29 @@ int addreminder()
     {
     case '1':
         strcpy(date, "Today");
+        FILE *ft;
+        ft = fopen("Program_files/Today.txt", "a");
+
+        printf("\t{Due time}\n");
+        printf("Hour: ");
+        scanf("%d", &hour);
+        if (hour > 24)
+        {
+            printf("Please enter a valid value.");
+            clrs();
+            addreminder();
+        }
+        printf("Minute: ");
+        scanf("%d", &minute);
+        if (minute > 60)
+        {
+            printf("Please enter a valid value.");
+            clrs();
+            addreminder();
+        }
+        fprintf(ft, "%d %d %s\n", hour, minute, reminder_title);
+        fclose(ft);
+
         break;
     case '2':
         strcpy(date, "Daily");
@@ -971,27 +1008,8 @@ int addreminder()
     default:
         break;
     }
-    printf("\t{Due time}\n");
-    printf("Hour: ");
-    scanf("%d", &hour);
-    if (hour > 24)
-    {
-        printf("Please enter a valid value.");
-        clrs();
-        addreminder();
-    }
-    printf("Minute: ");
-    scanf("%d", &minute);
-    if (minute > 60)
-    {
-        printf("Please enter a valid value.");
-        clrs();
-        addreminder();
-    }
-    if (exit_module(reminder_title))
-    {
-        return 0;
-    }
+
+    FILE *file;
     file = fopen("Program_files/Reminders.dat", "a");
     fprintf(file, "%d (%s) (%d:%d) %s \n", intid, date, hour, minute, reminder_title);
     fclose(file);
