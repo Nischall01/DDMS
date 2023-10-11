@@ -44,6 +44,7 @@ int reminder_notification()
             MessageBox(NULL, message, "Reminder", MB_ICONINFORMATION | MB_OK);
             Sleep(59000);
         }
+        fclose(fp);
         Sleep(1000);
     }
 }

@@ -1,0 +1,10 @@
+---------------------------
+| 1. | Add a new record   |
+| 2. | Open a record      |
+| 3. | Edit a record      |
+| 4. | Delete a record    |
+| 5. | Edit User data     |
+| 6. | Reminders          |
+| 7. | Help/About         |
+| 8. | Exit               |
+---------------------------

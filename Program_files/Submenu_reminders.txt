@@ -1,0 +1,6 @@
+--------------------------
+| 1. | Add reminder      |
+| 2. | Remove reminder   |
+| 3. | Clear reminders   |
+| 4. | Exit              |
+--------------------------

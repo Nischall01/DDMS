@@ -277,9 +277,8 @@ void UI()
                     break;
                 default:
                     clrs();
-                    printf("\tInvalid input. Please enter a valid option.");
-                    getchar();
-                    clrs();
+                    printf("Invalid input. Please enter a valid option.");
+                    press();
                     continue;
                 }
                 break;
@@ -307,7 +306,14 @@ void UI()
                         continue;
                         ;
                     }
-                    deletereminder();
+                    if (deletereminder() == 0)
+                    {
+                        printf("Reminder deletion completed successfully.\n");
+                    }
+                    else
+                    {
+                        printf("Reminder deletion failed.\n");
+                    }
                     continue;
                 case '3':
                     clrs();
@@ -324,9 +330,8 @@ void UI()
                     break;
                 default:
                     clrs();
-                    printf("\tInvalid input. Please enter a valid option.");
-                    getchar();
-                    clrs();
+                    printf("Invalid input. Please enter a valid option.");
+                    press();
                     continue;
                 }
                 break;
@@ -354,9 +359,8 @@ void UI()
             exit(0);
         default:
             clrs();
-            printf("\tInvalid input. Please enter a valid option.");
-            getchar();
-            clrs();
+            printf("Invalid input. Please enter a valid option.");
+            press();
             break;
         }
     }
@@ -428,38 +432,58 @@ void clearInputBuffer()
 
 void press()
 {
-    printf("\nPress any key to continue !\n");
+    printf("\n\tPress any key to continue!");
+    clearInputBuffer();
     getchar();
     clrs();
 }
 
 void menu()
 {
-    printf("______________________\n");
-    printf("(1) Add a new record\n");
-    printf("(2) Open a record\n");
-    printf("(3) Edit a record\n");
-    printf("(4) Delete a record\n");
-    printf("(5) Edit User data\n");
-    printf("(6) Reminders\n");
-    printf("(7) Help/About\n");
-    printf("(8) Exit\n");
+    FILE *fp;
+    fp = fopen("Program_files/Menu.txt", "r");
+    if (fp == NULL)
+    {
+        perror("Error! ");
+    }
+    while (fgets(line, sizeof(line), fp) != NULL)
+    {
+        printf("%s", line);
+    }
+    fclose(fp);
+    printf("\n");
 }
 
 void submenu_userdata()
 {
-    printf("(1) Edit Username\n");
-    printf("(2) Edit Password\n");
-    printf("(3) Edit Email Address\n");
-    printf("(4) Exit\n");
+    FILE *fp;
+    fp = fopen("Program_files/Submenu_userdata.txt", "r");
+    if (fp == NULL)
+    {
+        perror("Error! ");
+    }
+    while (fgets(line, sizeof(line), fp) != NULL)
+    {
+        printf("%s", line);
+    }
+    fclose(fp);
+    printf("\n");
 }
 
 void submenu_reminders()
 {
-    printf("(1) Add reminder\n");
-    printf("(2) Remove reminder\n");
-    printf("(3) Clear reminders\n");
-    printf("(4) Exit\n");
+    FILE *fp;
+    fp = fopen("Program_files/Submenu_reminders.txt", "r");
+    if (fp == NULL)
+    {
+        perror("Error! ");
+    }
+    while (fgets(line, sizeof(line), fp) != NULL)
+    {
+        printf("%s", line);
+    }
+    fclose(fp);
+    printf("\n");
 }
 
 int getMenuChoice()
@@ -661,6 +685,7 @@ void sign_up()
     }
     fputs(buffer, file);
     fclose(file);
+    clrs();
     printf("Sign up successful!\n");
     press();
     main();
@@ -894,12 +919,17 @@ int addreminder()
     dtime(&dt.year, &dt.month, &dt.day, &dt.hour, &dt.min, &dt.sec);
     char reminder_title[50], date[15];
     int month, day, hour, minute;
+    int hour1, minute1;
     int intid;
     int oldintid;
     char stringid[5];
     printf("Reminder Id: ");
     scanf("%d", &intid);
     sprintf(stringid, "%d", intid);
+    if (exit_module(stringid))
+    {
+        return 0;
+    }
     // Check if the id is longer than 3 letters.
     if (strlen(stringid) > 3)
     {
@@ -917,18 +947,13 @@ int addreminder()
         if (strncmp(stringid, line, strlen(stringid)) == 0)
         {
             clrs();
-            printf("A reminder with same Id already exits. Enter a different Id.");
+            printf("A reminder with Id '%d' already exits. Enter a unique Id.", intid);
             hold();
             fclose(fp);
             return 0;
         }
     }
     fclose(fp);
-
-    if (exit_module(stringid))
-    {
-        return 0;
-    }
 
     printf("Reminder Title: ");
     scanf(" %[^\n]", reminder_title);
@@ -940,7 +965,6 @@ int addreminder()
     printf("2. Tommorrow\n");
     printf("3. Day\n");
     printf("4. Month and day\n");
-    printf("5. Full date\n");
     printf("=> ");
     scanf("%s", when);
     if (exit_module(when))
@@ -952,31 +976,38 @@ int addreminder()
     case '1':
         strcpy(date, "Today");
         FILE *ft;
-        ft = fopen("Program_files/Today.txt", "a");
+        ft = fopen("Program_files/Today.txt", "w");
 
         printf("\t{Due time}\n");
         printf("Hour: ");
-        scanf("%d", &hour);
-        if (hour > 24)
+        scanf("%d", &hour1);
+        if (hour1 > 24)
         {
             printf("Please enter a valid value.");
             clrs();
             addreminder();
         }
         printf("Minute: ");
-        scanf("%d", &minute);
-        if (minute > 60)
+        scanf("%d", &minute1);
+        if (minute1 > 60)
         {
             printf("Please enter a valid value.");
             clrs();
             addreminder();
         }
-        fprintf(ft, "%d %d %s\n", hour, minute, reminder_title);
+        fprintf(ft, "%d %d %s\n", hour1, minute1, reminder_title);
         fclose(ft);
-
+        FILE *file;
+        file = fopen("Program_files/Reminders.dat", "a");
+        fprintf(file, "%d (%s) (%d:%d) %s \n", intid, date, hour1, minute1, reminder_title);
+        fclose(file);
+        printf("\nNew reminder added successfully.");
+        hold();
+        return 0;
         break;
+
     case '2':
-        strcpy(date, "Daily");
+        strcpy(date, "Tommorrow");
         break;
     case '3':
         printf("Enter Day: ");
@@ -1009,6 +1040,24 @@ int addreminder()
         break;
     }
 
+    printf("\t{Due time}\n");
+    printf("Hour: ");
+    scanf("%d", &hour);
+    if (hour > 24)
+    {
+        printf("Please enter a valid value.");
+        clrs();
+        addreminder();
+    }
+    printf("Minute: ");
+    scanf("%d", &minute);
+    if (minute > 60)
+    {
+        printf("Please enter a valid value.");
+        clrs();
+        addreminder();
+    }
+
     FILE *file;
     file = fopen("Program_files/Reminders.dat", "a");
     fprintf(file, "%d (%s) (%d:%d) %s \n", intid, date, hour, minute, reminder_title);
@@ -1019,60 +1068,80 @@ int addreminder()
 
 int deletereminder()
 {
-    char idtodelete[5];
-    printf("\tEnter the id of the reminder to be deleted.\n");
-    printf("=> ");
-    scanf("%s", idtodelete);
-    if (exit_module(idtodelete))
-    {
-        return 0;
-    }
+    char idToDelete[5];
+    printf("Enter the ID of the reminder to be deleted: ");
+    scanf("%4s", idToDelete);
+    char tempFileName[] = "temp.dat";
     FILE *originalFile, *tempFile;
-
     // Open the original record file in read mode
     originalFile = fopen("Program_files/Reminders.dat", "r");
     if (originalFile == NULL)
     {
-        perror("Error! \n");
+        perror("Error opening the original file");
         hold();
+        return 1;
     }
-
     // Open a temporary record file in write mode
-    tempFile = fopen("temp.dat", "w");
+    tempFile = fopen(tempFileName, "w");
     if (tempFile == NULL)
     {
-        perror("Error! \n");
+        perror("Error opening the temporary file");
         hold();
         fclose(originalFile);
+        return 1;
     }
+    char line[256];  // Adjust the buffer size as needed
+    int deleted = 0; // Flag to track if a reminder was deleted
 
-    // Read lines from the original file, and write to the temporary file
-    char line[256];
-    while (fgets(line, sizeof(line), originalFile))
+    while (fgets(line, sizeof(line), originalFile) != NULL)
     {
-        // Check if the line contains the ID to be deleted
-        if (strstr(line, idtodelete) == NULL)
+        // Remove trailing newline characters if present
+        size_t len = strlen(line);
+        if (len > 0 && line[len - 1] == '\n')
         {
-            // If not, write it to the temporary file
-            fputs(line, tempFile);
+            line[len - 1] = '\0';
+        }
+
+        // Check if the line contains the ID to be deleted
+        if (strncmp(idToDelete, line, strlen(idToDelete)) != 0)
+        {
+            fprintf(tempFile, "%s\n", line);
+        }
+        else
+        {
+            deleted = 1; // Set the flag if a reminder is deleted
         }
     }
-
     // Close both files
     fclose(originalFile);
     fclose(tempFile);
-
-    // Delete the original file
-    remove("Program_files/Reminders.dat");
-
-    // Rename the temporary file to the original file name
-    if (rename("temp.dat", "Program_files/Reminders.dat") != 0)
+    // Check if a reminder was deleted
+    if (!deleted)
     {
-        printf("Error renaming the temporary file.\n");
+        clrs();
+        printf("No reminder with ID '%s' found.\n", idToDelete);
+        hold();
+        remove(tempFileName); // Delete the temporary file
+        return 1;
     }
-    printf("\nThe reminder has been deleted successfully.");
-    hold();
+    // Delete the original file
+    if (remove("Program_files/Reminders.dat") != 0)
+    {
+        perror("Error deleting the original file");
+        hold();
+        return 1;
+    }
+    // Rename the temporary file to the original file name
+    if (rename(tempFileName, "Program_files/Reminders.dat") != 0)
+    {
+        perror("Error renaming the temporary file");
+        hold();
+        return 1;
+    }
     clrs();
+    printf("The reminder with ID '%s' has been deleted successfully.\n", idToDelete);
+    hold();
+    return 0;
 }
 
 int clearreminders()
@@ -1084,6 +1153,7 @@ int clearreminders()
     {
         FILE *fp = fopen("Program_files/Reminders.dat", "w");
         fclose(fp);
+        clrs();
         printf("The Reminders are cleared.");
     }
     else if (strcmp(yorn, "n") == 0)
@@ -1100,6 +1170,7 @@ int clearreminders()
 
 void editusername()
 {
+    clrs();
     char replacement[50];
     printf("Enter new username: ");
     scanf("%s", replacement);
@@ -1151,6 +1222,7 @@ void editusername()
 
 void editpassword()
 {
+    clrs();
     char replacement[50];
     printf("Enter new password: ");
     scanf("%s", replacement);
@@ -1203,6 +1275,7 @@ void editpassword()
 
 void editemailaddress()
 {
+    clrs();
     char replacement[50];
     printf("Enter new email address: ");
     scanf("%s", replacement);

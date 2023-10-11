@@ -1,0 +1,6 @@
+-----------------------------
+| 1. | Edit Username        |
+| 2. | Edit Password        |  
+| 3. | Edit Email Address   |
+| 4. | Exit                 |
+-----------------------------
