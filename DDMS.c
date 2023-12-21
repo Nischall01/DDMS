@@ -355,7 +355,7 @@ void UI()
         case 8:
             clrs();
             printf("\tHave a great Day.");
-            nap(1.7);
+            nap(2);
             exit(0);
         default:
             clrs();
