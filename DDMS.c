@@ -3,7 +3,7 @@
 #include <string.h>
 #ifdef _WIN32
 #include <windows.h>
-#define nap(x) Sleep(x * 1000) // Define nap for Windows
+#define nap(x) sleep(x) // Define nap for Windows
 #else
 #include <unistd.h>
 #define nap(x) sleep(x) // Define nap for UNIX
