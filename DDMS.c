@@ -1,14 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef _WIN32
 #include <windows.h>
-#define nap(x) sleep(x) // Define nap for Windows
+#include <unistd.h>
+#include <tlhelp32.h>
+
+#ifdef _WIN32
+#define nap(x) Sleep((x) * 1000) // Sleep function for Windows, takes milliseconds
 #else
-#include <unistd.h>
-#define nap(x) sleep(x) // Define nap for UNIX
+#define nap(x) sleep(x) // Sleep function for Unix-like systems, takes seconds
 #endif
-#include <unistd.h>
+
 #include <stdbool.h>
 #include <errno.h>
 #include <ctype.h>
@@ -19,9 +21,9 @@
 #define USERNAME_LINE 1
 #define PASSWORD_LINE 2
 #define EMAIL_LINE 3
+
 // Structures
-struct datetime
-{
+struct datetime {
     int year;
     int month;
     int day;
@@ -32,7 +34,6 @@ struct datetime
 
 // Function Declarations
 void press();
-int main();
 void menu();
 void submenu_userdata();
 int getMenuChoice();
@@ -60,6 +61,7 @@ int reminders();
 void submenu_reminders();
 void checkuserfile();
 bool exit_module(const char *);
+BOOL isProcessRunning(const char *);
 
 // Universal Variables
 int isnotint;
@@ -69,18 +71,54 @@ char pass[CH_LIMIT];  // This variable holds the password
 char email[CH_LIMIT]; // This variable holds the email address
 char line[MAX_LINE];
 
-int main()
-{
+
+
+
+int main() {
     clrs();
-    system("start /B Reminder_notifier.exe");
+      if (!isProcessRunning("Reminder_notifier.exe"))
+    {
+        system("start Reminder_notifier.exe");
+    }
     checkuserfile();
     login();
     UI();
     return 0;
 }
 
-void login()
+BOOL isProcessRunning(const char* processName)
 {
+    HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (hSnapshot == INVALID_HANDLE_VALUE)
+    {
+        printf("Error creating snapshot: %lu\n", GetLastError());
+        return FALSE;
+    }
+
+    PROCESSENTRY32 pe32;
+    pe32.dwSize = sizeof(PROCESSENTRY32);
+
+    if (!Process32First(hSnapshot, &pe32))
+    {
+        CloseHandle(hSnapshot);
+        printf("Error getting first process: %lu\n", GetLastError());
+        return FALSE;
+    }
+
+    do
+    {
+        if (strcmp(pe32.szExeFile, processName) == 0)
+        {
+            CloseHandle(hSnapshot);
+            return TRUE;
+        }
+    } while (Process32Next(hSnapshot, &pe32));
+
+    CloseHandle(hSnapshot);
+    return FALSE;
+}
+
+void login() {
     int passwordtries = 5;
     int emailtries = 5;
     char enteredpass[CH_LIMIT];
@@ -95,116 +133,88 @@ void login()
     int i;
     int namelength = strlen(name);
     printf("\t\t-------------");
-    for (i = 0; i < namelength; i++)
-    {
+    for (i = 0; i < namelength; i++) {
         printf("-");
     }
     printf("\n");
     printf("\t\t| Welcome, %s |", name);
     printf("\n");
     printf("\t\t-------------");
-    for (i = 0; i < namelength; i++)
-    {
+    for (i = 0; i < namelength; i++) {
         printf("-");
     }
-    do
-    {
+    do {
         printf("\n");
         printf("\n\tEnter password => ");
         scanf("%s", enteredpass);
-        if (strcmp(enteredpass, pass) == 0)
-        {
+        if (strcmp(enteredpass, pass) == 0) {
             break;
-        }
-        else if (strcmp(enteredpass, "EXIT") == 0)
-        {
+        } else if (strcmp(enteredpass, "EXIT") == 0) {
             clrs();
             printf("\tHave a great Day.");
-            nap(1.7);
+            nap(1.5);
             exit(0);
-        }
-        else if (strcmp(enteredpass, "RESET") == 0)
-        {
+        } else if (strcmp(enteredpass, "RESET") == 0) {
             clrs();
-            do
-            {
+            do {
                 printf("\nEnter your email address entered during the login or enter 'EXIT' to exit:\n=> ");
                 scanf("%s", enteredeaddy);
-                if (strcmp(enteredeaddy, email) == 0)
-                {
+                if (strcmp(enteredeaddy, email) == 0) {
                     clrs();
                     editpassword();
                     main();
-                }
-                else if (strcmp(enteredeaddy, "EXIT") == 0)
-                {
+                } else if (strcmp(enteredeaddy, "EXIT") == 0) {
                     main();
-                }
-                else
-                {
+                } else {
                     clrs();
                     emailtries--;
                     printf("\nIncorrect Email address. Please try again. Tries left: %d\n", emailtries);
-                    if (emailtries == 0) // if wrong email is entered more than '5' times the program will terminate.
-                    {
+                    if (emailtries == 0) { // if wrong email is entered more than '5' times the program will terminate.
                         notriesleft();
                     }
                 }
             } while (emailtries > 0);
-            if (emailtries == 0)
-            {
+            if (emailtries == 0) {
                 notriesleft();
             }
-        }
-        else
-        {
+        } else {
             passwordtries--;
             clrs();
             printf("\nIncorrect Password, please try again or if you forgot your password enter 'RESET'. Enter 'EXIT' to exit. Tries left: %d", passwordtries);
         }
     } while (passwordtries > 0);
 
-    if (passwordtries == 0) // if wrong password is entered more than '5' times the program will terminate.
-    {
+    if (passwordtries == 0) { // if wrong password is entered more than '5' times the program will terminate.
         notriesleft();
     }
 }
 
-void UI()
-{
+void UI() {
     clrs();
-    while (1)
-    {
+    while (1) {
         clrs();
         reminders();
         menu();
         int choice1;
         choice1 = getMenuChoice();
         clrs();
-        switch (choice1)
-        {
+        switch (choice1) {
         case 1:
-            if (addrecord() == 0)
-            {
+            if (addrecord() == 0) {
                 break;
             }
             clrs();
             break;
 
         case 2:
-            while (1)
-            {
+            while (1) {
                 clrs();
                 printf("\t|Open a record|\n");
-                if (records() == 0)
-                {
+                if (records() == 0) {
                     press();
                     break;
-                }
-                else
-                {
-                    if (openrecord() == 1)
-                    {
+                } else {
+                    if (openrecord() == 1) {
                         break;
                     }
                 }
@@ -212,19 +222,14 @@ void UI()
             break;
 
         case 3:
-            while (1)
-            {
+            while (1) {
                 clrs();
                 printf("\t|Edit a record|\n");
-                if (records() == 0)
-                {
+                if (records() == 0) {
                     press();
                     break;
-                }
-                else
-                {
-                    if (editrecord() == 1)
-                    {
+                } else {
+                    if (editrecord() == 1) {
                         break;
                     }
                 }
@@ -232,19 +237,14 @@ void UI()
             break;
 
         case 4:
-            while (1)
-            {
+            while (1) {
                 clrs();
                 printf("\t|Delete a record|\n");
-                if (records() == 0)
-                {
+                if (records() == 0) {
                     press();
                     break;
-                }
-                else
-                {
-                    if (deleterecord() == 1)
-                    {
+                } else {
+                    if (deleterecord() == 1) {
                         break;
                     }
                 }
@@ -253,15 +253,13 @@ void UI()
             break;
 
         case 5:
-            while (1)
-            {
+            while (1) {
                 clrs();
                 char choice2;
                 submenu_userdata();
                 printf(" => ");
-                scanf("%c", &choice2);
-                switch (choice2)
-                {
+                scanf(" %c", &choice2); // Added a space before %c to consume any leading whitespace
+                switch (choice2) {
                 case '1':
                     editusername();
                     continue;
@@ -286,39 +284,31 @@ void UI()
             break;
 
         case 6:
-            while (1)
-            {
+            while (1) {
                 clrs();
                 char choice3;
                 submenu_reminders();
                 printf(" => ");
-                scanf("%c", &choice3);
-                switch (choice3)
-                {
+                scanf(" %c", &choice3); // Added a space before %c to consume any leading whitespace
+                switch (choice3) {
                 case '1':
                     addreminder();
                     continue;
                 case '2':
                     clrs();
-                    if (reminders() == 0)
-                    {
+                    if (reminders() == 0) {
                         press();
                         continue;
-                        ;
                     }
-                    if (deletereminder() == 0)
-                    {
+                    if (deletereminder() == 0) {
                         printf("Reminder deletion completed successfully.\n");
-                    }
-                    else
-                    {
+                    } else {
                         printf("Reminder deletion failed.\n");
                     }
                     continue;
                 case '3':
                     clrs();
-                    if (reminders() == 0)
-                    {
+                    if (reminders() == 0) {
                         press();
                         continue;
                     }
@@ -341,21 +331,22 @@ void UI()
             clrs();
             FILE *file;
             file = fopen("README.pdf", "r");
-            if (file == NULL)
-            {
+            if (file == NULL) {
                 perror("Error! ");
                 getchar();
-            }
-            else
-            {
+            } else {
                 system("README.pdf");
             }
             fclose(file);
             break;
         case 8:
             clrs();
+            printf("\tReminder_notifier.exe will run in the background. Check Task Manager to find and close it.");
+            nap(4);
+            clrs();
             printf("\tHave a great Day.");
-            nap(2);
+            nap(1.5);
+            clrs();
             exit(0);
         default:
             clrs();
@@ -371,7 +362,6 @@ void UI()
 void clrs()
 {
     system("cls");
-    printf("\033[H\033[J");
 }
 
 void checkuserfile()
@@ -509,7 +499,7 @@ void notriesleft()
 {
     clrs();
     printf("\n\t********** No tries left. **********");
-    nap(2);
+    nap(1.5);
     exit(0);
 }
 
