@@ -14,7 +14,7 @@ Memory: 500 MB RAM (Minimum)
 
 ##### Intallation:
 
-- To install DDMS simply extract and place the DDMS folder in your system.
+- To install DDMS, download the [latest release](https://github.com/Nischall01/DDMS/releases/latest) then simply extract and place the DDMS folder in your system.
 
 ##### Execution:
 
@@ -56,12 +56,10 @@ The main menu is the central hub of DDMS, where you can access various features 
 
 ##### Adding a New Record:
 
-
 * Select "Add a new record" from the main menu.
 * Enter a unique record name.
 * Input the record's content.
 * Save the record.
-  
 
 ##### Opening a Record:
 
@@ -77,7 +75,6 @@ The main menu is the central hub of DDMS, where you can access various features 
 * Save the updated record.
 
 ##### Deleting a Record:
-
 
 * Select "Delete a record" from the main menu.
 * Enter the name of the record you want to delete.
@@ -100,7 +97,6 @@ The main menu is the central hub of DDMS, where you can access various features 
 ##### Editing Email Address:
 
 * Select "Edit Email Address" from the User Data submenu.
-
 * Enter your new email address.
 * Save the changes.
 
@@ -130,6 +126,4 @@ Select "Help/About" from the main menu to view program-related information and g
 ## 8 .Exiting the Program
 
 To exit the program, select "Exit" from the main menu.
-
-
 
