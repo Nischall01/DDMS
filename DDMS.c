@@ -78,7 +78,8 @@ int main() {
     clrs();
       if (!isProcessRunning("Reminder_notifier.exe"))
     {
-        system("start Reminder\Reminder_notifier.exe");
+        system("start Reminder\\Reminder_notifier.exe");
+        getchar();
     }
     checkuserfile();
     login();
