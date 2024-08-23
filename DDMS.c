@@ -78,7 +78,7 @@ int main() {
     clrs();
       if (!isProcessRunning("Reminder_notifier.exe"))
     {
-        system("start Reminder_notifier.exe");
+        system("start Reminder\Reminder_notifier.exe");
     }
     checkuserfile();
     login();
@@ -342,7 +342,7 @@ void UI() {
         case 8:
             clrs();
             printf("\tReminder_notifier.exe will run in the background. Check Task Manager to find and close it.");
-            nap(4);
+            nap(3);
             clrs();
             printf("\tHave a great Day.");
             nap(1.5);
